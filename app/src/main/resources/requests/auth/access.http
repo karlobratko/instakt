@@ -1,0 +1,36 @@
+###
+POST http://localhost:8080/api/v1/auth/access/acquire
+Content-Type: application/json
+
+{
+  "username": "kbratko",
+  "password": "Pa$$w0rd"
+}
+
+> {%
+    client.global.set("access_token", response.body.data.accessToken);
+    client.global.set("refresh_token", response.body.data.refreshToken);
+%}
+
+###
+POST http://localhost:8080/api/v1/auth/access/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": {{refresh_token}}
+}
+
+> {%
+    if (parseInt(response.body.code) !== 200) {
+        client.global.set("access_token", response.body.data.accessToken);
+        client.global.set("refresh_token", response.body.data.refreshToken);
+    }
+%}
+
+###
+POST http://localhost:8080/api/v1/auth/access/revoke
+Content-Type: application/json
+
+{
+  "refreshToken": {{refresh_token}}
+}

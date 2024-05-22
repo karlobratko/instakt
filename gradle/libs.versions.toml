@@ -1,0 +1,228 @@
+[versions]
+kotlin = "1.9.23"
+junit-jupiter-engine = "5.10.1"
+kotlinx-coroutines = "1.8.1-Beta"
+kotlinx-serialization = "1.6.3"
+kotlinx-datetime = "0.6.0-RC.2"
+ktor = "2.3.10"
+hikari = "5.1.0"
+flyway = "10.7.1"
+exposed = "0.46.0"
+h2 = "2.2.220"
+postgresql = "42.7.3"
+kreds = "0.9.1"
+kache = "2.1.0-beta05"
+arrow = "1.2.3"
+suspendapp = "0.4.0"
+micrometer = "1.6.3"
+logback = "1.4.14"
+mail = "2.0.3"
+koin = "3.5.6"
+kotest-core = "5.8.0"
+kotest-ktor = "2.0.0"
+kotest-arrow = "1.4.0"
+kotest-datetime = "2.0.0"
+mockk = "1.13.10"
+
+[libraries]
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-properties = { module = "org.jetbrains.kotlinx:kotlinx-serialization-properties", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-hocon = { module = "org.jetbrains.kotlinx:kotlinx-serialization-hocon", version.ref = "kotlinx-serialization" }
+
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging-jvm", version.ref = "ktor" }
+ktor-server-call-id = { module = "io.ktor:ktor-server-call-id-jvm", version.ref = "ktor" }
+ktor-server-http-redirect = { module = "io.ktor:ktor-server-http-redirect-jvm", version.ref = "ktor" }
+ktor-server-hsts = { module = "io.ktor:ktor-server-hsts-jvm", version.ref = "ktor" }
+ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header-jvm", version.ref = "ktor" }
+ktor-server-default-headers = { module = "io.ktor:ktor-server-default-headers-jvm", version.ref = "ktor" }
+ktor-server-server-cors = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktor" }
+ktor-server-server-compression = { module = "io.ktor:ktor-server-compression-jvm", version.ref = "ktor" }
+ktor-server-double-receive = { module = "io.ktor:ktor-server-double-receive-jvm", version.ref = "ktor" }
+ktor-server-auto-head-response = { module = "io.ktor:ktor-server-auto-head-response-jvm", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "ktor" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor" }
+ktor-server-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-resources = { module = "io.ktor:ktor-server-resources", version.ref = "ktor" }
+ktor-server-method-override = { module = "io.ktor:ktor-server-method-override", version.ref = "ktor" }
+ktor-server-request-validation = { module = "io.ktor:ktor-server-request-validation", version.ref = "ktor" }
+ktor-server-rate-limit = { module = "io.ktor:ktor-server-rate-limit", version.ref = "ktor" }
+ktor-server-partial-content = { module = "io.ktor:ktor-server-partial-content", version.ref = "ktor" }
+ktor-server-swagger = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor" }
+ktor-server-openapi = { module = "io.ktor:ktor-server-openapi", version.ref = "ktor" }
+ktor-server-metrics-micrometer = { module = "io.ktor:ktor-server-metrics-micrometer-jvm", version.ref = "ktor" }
+ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core-jvm", version.ref = "ktor" }
+ktor-client-jetty = { module = "io.ktor:ktor-client-jetty-jvm", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
+exposed-crypt = { module = "org.jetbrains.exposed:exposed-crypt", version.ref = "exposed" }
+
+kreds = { module = "io.github.crackthecodeabhi:kreds", version.ref = "kreds" }
+
+kache-core = { module = "com.mayakapps.kache:kache", version.ref = "kache" }
+kache-file = { module = "com.mayakapps.kache:file-kache", version.ref = "kache" }
+
+db-h2 = { module = "com.h2database:h2", version.ref = "h2" }
+db-postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+arrow-serialization = { module = "io.arrow-kt:arrow-core-serialization", version.ref = "arrow" }
+arrow-fx = { module = "io.arrow-kt:arrow-fx-coroutines-jvm", version.ref = "arrow" }
+
+suspendapp = { module = "io.arrow-kt:suspendapp", version.ref = "suspendapp" }
+suspendapp-ktor = { module = "io.arrow-kt:suspendapp-ktor", version.ref = "suspendapp" }
+
+micrometer = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+mail = { module = "org.eclipse.angus:angus-mail", version.ref = "mail" }
+
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core" }
+koin-coroutines = { module = "io.insert-koin:koin-core-coroutines" }
+koin-ktor = { module = "io.insert-koin:koin-ktor" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j" }
+
+test-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter-engine" }
+
+test-ktor-server = { module = "io.ktor:ktor-server-tests-jvm", version.ref = "ktor" }
+
+test-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+test-kotest-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest-core" }
+test-kotest-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "kotest-core" }
+test-kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest-core" }
+test-kotest-property-datetime = { module = "io.kotest.extensions:kotest-property-datetime", version.ref = "kotest-datetime" }
+
+test-kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest-core" }
+test-kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest-core" }
+test-kotest-assertions-sql = { module = "io.kotest:kotest-assertions-sql", version.ref = "kotest-core" }
+test-kotest-assertions-arrow = { module = "io.kotest.extensions:kotest-assertions-arrow", version.ref = "kotest-arrow" }
+test-kotest-assertions-ktor = { module = "io.kotest.extensions:kotest-assertions-ktor", version.ref = "kotest-ktor" }
+
+test-kotest-extensions-now = { module = "io.kotest:kotest-extensions-now", version.ref = "kotest-core" }
+test-kotest-extensions-jvm = { module = "io.kotest:kotest-extensions-jvm", version.ref = "kotest-core" }
+
+test-mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+
+[plugins]
+jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+[bundles]
+kotlinx-serializations = [
+    "kotlinx-serialization-json",
+    "kotlinx-serialization-properties",
+    "kotlinx-serialization-hocon"
+]
+
+ktor-server = [
+    "ktor-server-core",
+    "ktor-server-kotlinx-json",
+    "ktor-server-content-negotiation",
+    "ktor-server-call-logging",
+    "ktor-server-call-id",
+    "ktor-server-http-redirect",
+    "ktor-server-hsts",
+    "ktor-server-forwarded-header",
+    "ktor-server-default-headers",
+    "ktor-server-server-cors",
+    "ktor-server-server-compression",
+    "ktor-server-double-receive",
+    "ktor-server-auto-head-response",
+    "ktor-server-auth",
+    "ktor-server-auth-jwt",
+    "ktor-server-server-netty",
+    "ktor-server-status-pages",
+    "ktor-server-resources",
+    "ktor-server-method-override",
+    "ktor-server-request-validation",
+    "ktor-server-rate-limit",
+    "ktor-server-partial-content",
+    "ktor-server-swagger",
+    "ktor-server-openapi",
+    "ktor-server-metrics-micrometer",
+    "ktor-server-html-builder"
+]
+
+ktor-client = [
+    "ktor-client-core",
+    "ktor-client-jetty",
+    "ktor-client-content-negotiation"
+]
+
+flyway = [
+    "flyway-core",
+    "flyway-database-postgresql"
+]
+
+exposed = [
+    "exposed-core",
+    "exposed-dao",
+    "exposed-jdbc",
+    "exposed-kotlin-datetime",
+    "exposed-crypt"
+]
+
+arrow = [
+    "arrow-core",
+    "arrow-serialization",
+    "arrow-fx"
+]
+
+suspendapp = [
+    "suspendapp",
+    "suspendapp-ktor"
+]
+
+kache = [
+    "kache-core",
+    "kache-file"
+]
+
+koin = [
+    "koin-core",
+    "koin-coroutines",
+    "koin-ktor",
+    "koin-logger-slf4j"
+]
+
+test-kotest-core = [
+    "test-kotest-junit5",
+    "test-kotest-datatest",
+    "test-kotest-property"
+]
+
+test-kotest-assertions = [
+    "test-kotest-assertions-core",
+    "test-kotest-assertions-json",
+    "test-kotest-assertions-sql",
+    "test-kotest-assertions-arrow",
+    "test-kotest-assertions-ktor"
+]
+
+test-kotest-extensions = [
+    "test-kotest-extensions-now",
+    "test-kotest-extensions-jvm",
+    "test-kotest-property-datetime"
+]

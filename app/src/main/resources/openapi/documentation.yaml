@@ -1,0 +1,185 @@
+openapi: "3.1.0"
+info:
+  title: "ktor_poc API"
+  description: "ktor_poc API"
+  version: "1.0.0"
+servers:
+- url: "https://ktor_poc"
+paths:
+  /auth/access/acquire:
+    post:
+      description: ""
+      parameters:
+      - name: "INSTANCE"
+        in: "query"
+        required: false
+        schema:
+          type: "object"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Credentials"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Token"
+              examples:
+                Example#1:
+                  description: ""
+                  value:
+                    access: "null"
+                    type: "Bearer"
+  /customers:
+    get:
+      description: ""
+      parameters:
+      - name: "INSTANCE"
+        in: "query"
+        required: false
+        schema:
+          type: "object"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Customer"
+              examples:
+                Example#1:
+                  description: ""
+                  value: []
+    post:
+      description: ""
+      parameters:
+      - name: "INSTANCE"
+        in: "query"
+        required: false
+        schema:
+          type: "object"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+        required: true
+      responses:
+        "200":
+          description: ""
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /customers/{id}:
+    delete:
+      description: ""
+      parameters:
+      - name: "INSTANCE"
+        in: "query"
+        required: false
+        schema:
+          type: "object"
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "integer"
+      responses:
+        "200":
+          description: ""
+          content:
+            '*/*':
+              schema:
+                type: "object"
+              examples:
+                Example#1:
+                  value: ""
+    get:
+      description: ""
+      parameters:
+      - name: "INSTANCE"
+        in: "query"
+        required: false
+        schema:
+          type: "object"
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "integer"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Customer"
+  /download:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK <br> A file response"
+          content:
+            application/*:
+              schema:
+                type: "object"
+                format: "binary"
+  /hello:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: ""
+components:
+  schemas:
+    Credentials:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+      required:
+      - "username"
+      - "password"
+    Token:
+      type: "object"
+      properties:
+        access:
+          type: "string"
+        type:
+          type: "string"
+      required:
+      - "access"
+      - "type"
+    Customer:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+        email:
+          type: "string"
+      required:
+      - "firstName"
+      - "lastName"
+      - "email"

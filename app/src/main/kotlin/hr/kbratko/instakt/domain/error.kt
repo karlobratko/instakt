@@ -1,0 +1,100 @@
+package hr.kbratko.instakt.domain
+
+sealed interface DomainError
+
+sealed interface MailingError : DomainError {
+    data object CouldNotSendEmail : MailingError
+}
+
+data object UnhandledServerError : DomainError
+
+data object EndpointRequestLimitMet : DomainError
+
+sealed interface RequestError : DomainError {
+    data object RequestBodyCouldNotBeParsed : RequestError
+
+    data object InvalidRequestPathParameter : RequestError
+
+    data object InvalidRequestQueryParameter : RequestError
+}
+
+sealed interface DbError : DomainError {
+
+    data object UsernameAlreadyExists : DbError
+
+    data object EmailAlreadyExists : DbError
+
+    data object InvalidUsernameOrPassword : DbError
+
+    data object InvalidRefreshToken : DbError
+
+    data object RefreshTokenAlreadyRevoked : DbError
+
+    data object InvalidRegistrationToken : DbError
+
+    data object RegistrationTokenAlreadyConfirmed : DbError
+
+    data object RefreshTokenStillValid : DbError
+
+    data object RegistrationTokenAlreadyExpired : DbError
+
+    data object RegistrationTokenStillValid : DbError
+
+    data object RegistrationTokenNotConfirmed : DbError
+
+    data object UserNotFound : DbError
+}
+
+sealed interface SecurityError : DomainError {
+    data object TokenGenerationFailed : SecurityError
+
+    data object ClaimsExtractionError : SecurityError
+
+    sealed interface TokenValidationError : SecurityError {
+        data object MalformedSubject : SecurityError
+
+        data object UnsupportedRoleClaim : SecurityError
+
+        data object TokenExpired : SecurityError
+    }
+}
+
+sealed interface ValidationError : DomainError {
+    sealed interface UserValidationError : ValidationError {
+        sealed interface UsernameValidationError : UserValidationError {
+            data object NonAlphanumericCharacterInUsername : UsernameValidationError
+
+            data object TooShortUsername : UsernameValidationError
+
+            data object TooLongUsername : UsernameValidationError
+        }
+
+        sealed interface EmailValidationError : UserValidationError {
+            data object InvalidEmail : EmailValidationError
+
+            data object TooLongEmail : EmailValidationError
+        }
+
+        sealed interface PasswordValidationError : UserValidationError {
+            data object TooShortPassword : PasswordValidationError
+
+            data object NoDigitsInPassword : PasswordValidationError
+
+            data object WhitespaceInPassword : PasswordValidationError
+
+            data object NoUppercaseCharsInPassword : PasswordValidationError
+
+            data object NoSpecialCharsInPassword : PasswordValidationError
+        }
+
+        sealed interface RoleValidationError : UserValidationError {
+            data object InvalidUserRole : RoleValidationError
+
+            data object AdminCanNotBeCreated : RoleValidationError
+        }
+
+        sealed interface RedirectUrlValidationError : UserValidationError {
+            data object InvalidRedirectUrlPattern : RedirectUrlValidationError
+        }
+    }
+}

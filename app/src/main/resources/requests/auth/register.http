@@ -1,0 +1,27 @@
+###
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "kbratko",
+  "email": "kbratko@algebra.com",
+  "password": "Pa$$w0rd",
+  "role": "User",
+  "redirectUrl": "http://localhost:3000/confirm-registration"
+}
+
+###
+POST http://localhost:8080/api/v1/auth/register/confirm
+Content-Type: application/json
+
+{
+  "registrationToken": "103efe27-6882-4726-9cad-272d3b599d0e"
+}
+
+###
+POST http://localhost:8080/api/v1/auth/register/reset
+Content-Type: application/json
+
+{
+  "registrationToken": "103efe27-6882-4726-9cad-272d3b599d0e"
+}
