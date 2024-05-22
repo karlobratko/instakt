@@ -6,8 +6,8 @@ import arrow.core.Option.Companion.catch
 import arrow.core.raise.either
 import arrow.core.singleOrNone
 import hr.kbratko.instakt.domain.DbError.InvalidRefreshToken
-import hr.kbratko.instakt.domain.DbError.RefreshTokenStillValid
 import hr.kbratko.instakt.domain.DbError.RefreshTokenAlreadyRevoked
+import hr.kbratko.instakt.domain.DbError.RefreshTokenStillValid
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.config.RoundedInstantProvider
 import hr.kbratko.instakt.domain.conversion.ConversionScope
@@ -31,7 +31,6 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import kotlin.time.Duration

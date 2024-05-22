@@ -8,16 +8,15 @@ import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.SecurityContext
 import hr.kbratko.instakt.domain.security.Token
 import hr.kbratko.instakt.domain.security.jwt.JwtTokenService
-import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
-import io.ktor.server.routing.Route
 import io.ktor.server.resources.post
 import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 

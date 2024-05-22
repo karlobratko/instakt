@@ -1,6 +1,5 @@
 package hr.kbratko.instakt.domain.validation
 
-import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.EitherNel
 import arrow.core.left

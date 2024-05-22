@@ -9,8 +9,6 @@ import hr.kbratko.instakt.domain.config.DefaultInstantProvider
 import hr.kbratko.instakt.domain.conversion.ConversionScope
 import hr.kbratko.instakt.infrastructure.errors.NelErrorToHttpStatusCodeConversion
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.response.respond
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

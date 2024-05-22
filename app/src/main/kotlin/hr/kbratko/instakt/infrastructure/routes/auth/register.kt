@@ -2,7 +2,6 @@ package hr.kbratko.instakt.infrastructure.routes.auth
 
 import arrow.core.toEitherNel
 import hr.kbratko.instakt.domain.DomainError
-import hr.kbratko.instakt.domain.ValidationError
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.RoleValidationError.InvalidUserRole
 import hr.kbratko.instakt.domain.eitherNel
@@ -31,9 +30,9 @@ import io.ktor.server.plugins.requestvalidation.RequestValidation
 import io.ktor.server.plugins.requestvalidation.ValidationResult.Invalid
 import io.ktor.server.plugins.requestvalidation.ValidationResult.Valid
 import io.ktor.server.request.receive
-import io.ktor.server.routing.Route
 import io.ktor.server.resources.post
 import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 

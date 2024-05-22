@@ -23,10 +23,6 @@ import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.plugins.hsts.HSTS
 import io.ktor.server.plugins.hsts.maxAgeDuration
 import io.ktor.server.plugins.partialcontent.PartialContent
-import java.time.Duration
-import kotlinx.serialization.hocon.Hocon
-import kotlinx.serialization.hocon.decodeFromConfig
-import kotlin.time.Duration.Companion.days
 
 fun Application.configureHttp() {
     val config = environment.config

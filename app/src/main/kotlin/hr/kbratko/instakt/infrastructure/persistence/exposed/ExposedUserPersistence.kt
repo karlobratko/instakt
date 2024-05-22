@@ -9,7 +9,6 @@ import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.right
 import arrow.core.singleOrNone
-import hr.kbratko.instakt.domain.DbError
 import hr.kbratko.instakt.domain.DbError.EmailAlreadyExists
 import hr.kbratko.instakt.domain.DbError.InvalidUsernameOrPassword
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenNotConfirmed
