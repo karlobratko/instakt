@@ -33,6 +33,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
@@ -67,6 +68,17 @@ fun Route.register() {
                 ifRight = { Valid }
             )
         }
+
+        validate<ResetRegister> { request ->
+            when (request) {
+                is ResetRegister.WithEmail -> request.email.validate(EmailIsValid).fold(
+                    ifLeft = { errors -> Invalid(errors.map { it.toString() }) },
+                    ifRight = { Valid }
+                )
+
+                is ResetRegister.WithToken -> Valid
+            }
+        }
     }
 
     restrictedRateLimit {
@@ -83,18 +95,7 @@ fun Route.register() {
                     )
                 ).toEitherNel().bind()
 
-                mailingService
-                    .send(
-                        ConfirmRegistration(
-                            from = senders.auth,
-                            email = user.email,
-                            username = user.username,
-                            confirmUrl = "${content.redirectUrl}?registrationToken=${user.registrationToken.value}"
-                        )
-                    )
-                    .toEitherNel()
-                    .onLeft { userPersistence.delete(user.id) }
-                    .bind()
+                sendConfirmRegistrationEmail(mailingService, senders, user, content.redirectUrl).bind()
             }.toResponse(HttpStatusCode.Created).let { call.respond(it.code, it) }
         }
 
@@ -102,7 +103,7 @@ fun Route.register() {
             eitherNel<DomainError, Unit> {
                 val content = call.receive<ConfirmRegister>()
 
-                registrationTokenPersistence.confirm(Token.Register(content.registrationToken)).toEitherNel().bind()
+                registrationTokenPersistence.confirm(Token.Register(content.token)).toEitherNel().bind()
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
         }
 
@@ -110,12 +111,33 @@ fun Route.register() {
             eitherNel<DomainError, Unit> {
                 val content = call.receive<ResetRegister>()
 
-                registrationTokenPersistence.reset(Token.Register(content.registrationToken)).toEitherNel().bind()
+                val user = when (content) {
+                    is ResetRegister.WithEmail -> userPersistence.resetRegistrationToken(User.Email(content.email))
+                    is ResetRegister.WithToken -> userPersistence.resetRegistrationToken(Token.Register(content.token))
+                }.toEitherNel().bind()
+
+                sendConfirmRegistrationEmail(mailingService, senders, user, content.redirectUrl).bind()
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
         }
     }
 
 }
+
+private suspend fun sendConfirmRegistrationEmail(
+    mailingService: MailingService,
+    senders: Senders,
+    user: User,
+    redirectUrl: String
+) = mailingService
+    .send(
+        ConfirmRegistration(
+            from = senders.auth,
+            email = user.email,
+            username = user.username,
+            confirmUrl = "${redirectUrl}?registrationToken=${user.registrationToken.value}"
+        )
+    )
+    .toEitherNel()
 
 @Serializable
 data class RegisterUser(
@@ -126,6 +148,17 @@ data class RegisterUser(
     val redirectUrl: String
 )
 
-@Serializable data class ConfirmRegister(val registrationToken: String)
+@Serializable data class ConfirmRegister(val token: String)
 
-@Serializable data class ResetRegister(val registrationToken: String)
+@Serializable sealed interface ResetRegister {
+    val redirectUrl: String
+
+    @Serializable
+    @SerialName("token")
+    data class WithToken(val token: String, override val redirectUrl: String) : ResetRegister
+
+    @Serializable
+    @SerialName("email")
+    data class WithEmail(val email: String, override val redirectUrl: String) : ResetRegister
+}
+

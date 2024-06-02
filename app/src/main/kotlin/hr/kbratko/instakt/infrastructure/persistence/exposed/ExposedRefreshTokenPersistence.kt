@@ -2,7 +2,6 @@ package hr.kbratko.instakt.infrastructure.persistence.exposed
 
 import arrow.core.Either
 import arrow.core.Option
-import arrow.core.Option.Companion.catch
 import arrow.core.raise.either
 import arrow.core.singleOrNone
 import hr.kbratko.instakt.domain.DbError.InvalidRefreshToken
@@ -19,9 +18,9 @@ import hr.kbratko.instakt.domain.model.RefreshToken.Status.Revoked
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RefreshTokenPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.security.toUUIDOrNone
 import hr.kbratko.instakt.domain.toKotlinInstant
 import java.time.ZoneOffset.UTC
-import java.util.UUID
 import kotlinx.datetime.toJavaInstant
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
@@ -169,8 +168,6 @@ fun ExposedRefreshTokenPersistence(db: Database, config: RefreshTokenPersistence
                 expiresAt lessEq (RoundedInstantProvider.now() - duration).toJavaInstant().atOffset(UTC)
             }
         }
-
-        private fun Token.Refresh.toUUIDOrNone() = catch { UUID.fromString(value) }
     }
 
 typealias ResultRowToRefreshTokenConversionScope = ConversionScope<ResultRow, RefreshToken>

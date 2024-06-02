@@ -2,12 +2,11 @@ package hr.kbratko.instakt.infrastructure.persistence.exposed
 
 import arrow.core.Either
 import arrow.core.Option
-import arrow.core.Option.Companion.catch
 import arrow.core.raise.either
 import arrow.core.singleOrNone
 import hr.kbratko.instakt.domain.DbError.InvalidRegistrationToken
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenAlreadyConfirmed
-import hr.kbratko.instakt.domain.DbError.RegistrationTokenAlreadyExpired
+import hr.kbratko.instakt.domain.DbError.RegistrationTokenExpired
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenStillValid
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.config.DefaultInstantProvider
@@ -19,6 +18,7 @@ import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Confirmed
 import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Unconfirmed
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.security.toUUIDOrNone
 import hr.kbratko.instakt.domain.toKotlinInstant
 import java.time.ZoneOffset.UTC
 import java.util.UUID
@@ -27,6 +27,8 @@ import kotlinx.datetime.toJavaInstant
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 import org.jetbrains.exposed.sql.selectAll
@@ -82,7 +84,7 @@ fun ExposedRegistrationTokenPersistence(db: Database, config: RegistrationTokenP
                         val now = DefaultInstantProvider.now()
 
                         if (now > expiresAt)
-                            raise(RegistrationTokenAlreadyExpired)
+                            raise(RegistrationTokenExpired)
 
                         RegistrationTokensTable.update({ RegistrationTokensTable.id eq id }) {
                             it[confirmedAt] = now.toJavaInstant().atOffset(UTC)
@@ -98,7 +100,7 @@ fun ExposedRegistrationTokenPersistence(db: Database, config: RegistrationTokenP
             }
         }
 
-        override suspend fun reset(token: Token.Register): Either<DomainError, Token.Register> = either {
+        override suspend fun delete(token: Token.Register): Either<DomainError, Token.Register> = either {
             ioTransaction(db = db) {
                 val (id, status, expiresAt) = selectTokenStatusAndExpiresAt(token).getOrRaise { InvalidRegistrationToken }
 
@@ -109,9 +111,7 @@ fun ExposedRegistrationTokenPersistence(db: Database, config: RegistrationTokenP
                         if (now <= expiresAt)
                             raise(RegistrationTokenStillValid)
 
-                        RegistrationTokensTable.update({ RegistrationTokensTable.id eq id }) {
-                            it[this.expiresAt] = (now + config.expiresAfter).toJavaInstant().atOffset(UTC)
-                        }
+                        RegistrationTokensTable.deleteWhere { RegistrationTokensTable.id eq id }
 
                         token
                     }
@@ -141,8 +141,6 @@ fun ExposedRegistrationTokenPersistence(db: Database, config: RegistrationTokenP
                             )
                         }
                 }
-
-        private fun Token.Register.toUUIDOrNone() = catch { UUID.fromString(value) }
     }
 
 typealias ResultRowToRegistrationTokenConversionScope = ConversionScope<ResultRow, RegistrationToken>

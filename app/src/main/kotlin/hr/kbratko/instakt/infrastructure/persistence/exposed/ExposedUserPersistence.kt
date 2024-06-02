@@ -10,6 +10,7 @@ import arrow.core.raise.ensure
 import arrow.core.right
 import arrow.core.singleOrNone
 import hr.kbratko.instakt.domain.DbError.EmailAlreadyExists
+import hr.kbratko.instakt.domain.DbError.InvalidRegistrationToken
 import hr.kbratko.instakt.domain.DbError.InvalidUsernameOrPassword
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenNotConfirmed
 import hr.kbratko.instakt.domain.DbError.UserNotFound
@@ -17,12 +18,14 @@ import hr.kbratko.instakt.domain.DbError.UsernameAlreadyExists
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.conversion.ConversionScope
 import hr.kbratko.instakt.domain.conversion.convert
+import hr.kbratko.instakt.domain.getOrRaise
 import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Confirmed
 import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Unconfirmed
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.toUUIDOrNone
 import hr.kbratko.instakt.infrastructure.persistence.exposed.UsersTable.id
 import java.util.UUID
 import org.jetbrains.exposed.crypt.Encryptor
@@ -49,6 +52,8 @@ private const val USERNAME_UNIQUE_INDEX = "users_username_unique_index"
 
 private const val EMAIL_UNIQUE_INDEX = "users_email_unique_index"
 
+private const val REGISTRATION_TOKEN_ID_INDEX = "users_registration_token_fk_unique_index"
+
 object UsersTable : LongIdTable("users", "user_pk") {
     val username = varchar("username", 50).uniqueIndex(USERNAME_UNIQUE_INDEX)
     val email = varchar("email", 256).uniqueIndex(EMAIL_UNIQUE_INDEX)
@@ -59,6 +64,7 @@ object UsersTable : LongIdTable("users", "user_pk") {
     )
     val role = enumeration<User.Role>("role")
     val registrationTokenId = reference("registration_token_fk", RegistrationTokensTable, onDelete = Cascade)
+        .uniqueIndex(REGISTRATION_TOKEN_ID_INDEX)
 }
 
 fun ExposedUserPersistence(db: Database, registrationTokenPersistence: RegistrationTokenPersistence) =
@@ -176,6 +182,49 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
                 ensure(deletedCount > 0) { UserNotFound }
 
                 id
+            }
+        }
+
+        override suspend fun resetRegistrationToken(email: User.Email): Either<DomainError, User> = either {
+            ioTransaction(db = db) {
+                val user = UsersTable
+                    .selectAll()
+                    .where { UsersTable.email eq email.value }
+                    .singleOrNone()
+                    .map { it.convert(ResultRowToUserConversion) }
+                    .getOrRaise { UserNotFound }
+
+                resetRegistrationToken(user).bind()
+            }
+        }
+
+        override suspend fun resetRegistrationToken(token: Token.Register): Either<DomainError, User> = either {
+            ioTransaction(db = db) {
+                val registrationTokenId = token.value.toUUIDOrNone().toEither { InvalidRegistrationToken }.bind()
+                val user = UsersTable
+                    .selectAll()
+                    .where { UsersTable.registrationTokenId eq registrationTokenId }
+                    .singleOrNone()
+                    .map { it.convert(ResultRowToUserConversion) }
+                    .getOrRaise { UserNotFound }
+
+                resetRegistrationToken(user).bind()
+            }
+        }
+
+        suspend fun resetRegistrationToken(user: User): Either<DomainError, User> = either {
+            ioTransaction(db = db) {
+                val insertedRegistrationTokenId = registrationTokenPersistence.insert()
+
+                catchOrThrow<ExposedSQLException, Int> {
+                    UsersTable.update({ UsersTable.id eq user.id.value }) {
+                        it[registrationTokenId] = UUID.fromString(insertedRegistrationTokenId.value)
+                    }
+                }.mapLeft { it.convert(ExposedSQLExceptionToDbErrorConversion) }.bind()
+
+                registrationTokenPersistence.delete(user.registrationToken).bind()
+
+                user.copy(registrationToken = insertedRegistrationTokenId)
             }
         }
     }

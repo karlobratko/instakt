@@ -36,7 +36,7 @@ sealed interface DbError : DomainError {
 
     data object RefreshTokenStillValid : DbError
 
-    data object RegistrationTokenAlreadyExpired : DbError
+    data object RegistrationTokenExpired : DbError
 
     data object RegistrationTokenStillValid : DbError
 

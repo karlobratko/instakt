@@ -13,5 +13,5 @@ interface RegistrationTokenPersistence {
 
     suspend fun confirm(token: Token.Register): Either<DomainError, Token.Register>
 
-    suspend fun reset(token: Token.Register): Either<DomainError, Token.Register>
+    suspend fun delete(token: Token.Register): Either<DomainError, Token.Register>
 }

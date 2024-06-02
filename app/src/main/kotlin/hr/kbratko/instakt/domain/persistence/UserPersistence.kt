@@ -6,6 +6,7 @@ import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.model.User.Password
 import hr.kbratko.instakt.domain.model.User.Username
+import hr.kbratko.instakt.domain.security.Token
 
 interface UserPersistence {
     suspend fun insert(user: User.New): Either<DomainError, User>
@@ -21,4 +22,8 @@ interface UserPersistence {
     suspend fun update(data: User.ChangePassword): Either<DomainError, User>
 
     suspend fun delete(id: User.Id): Either<DomainError, User.Id>
+
+    suspend fun resetRegistrationToken(email: User.Email): Either<DomainError, User>
+
+    suspend fun resetRegistrationToken(token: Token.Register): Either<DomainError, User>
 }

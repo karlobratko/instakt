@@ -16,7 +16,8 @@ CREATE TABLE users
     registration_token_fk UUID         NOT NULL,
     FOREIGN KEY (registration_token_fk) REFERENCES registration_tokens (registration_token_pk),
     CONSTRAINT users_username_unique_index UNIQUE (username),
-    CONSTRAINT users_email_unique_index UNIQUE (email)
+    CONSTRAINT users_email_unique_index UNIQUE (email),
+    CONSTRAINT users_registration_token_fk_unique_index UNIQUE (registration_token_fk)
 );
 
 CREATE TABLE refresh_tokens

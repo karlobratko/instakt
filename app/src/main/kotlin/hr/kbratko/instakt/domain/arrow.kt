@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.EitherNel
 import arrow.core.Nel
 import arrow.core.Option
+import arrow.core.Option.Companion.catch
 import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.nel
@@ -14,10 +15,13 @@ import arrow.core.raise.fold
 import arrow.core.right
 import arrow.core.toNonEmptyListOrNone
 import arrow.core.toOption
+import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.experimental.ExperimentalTypeInference
 import kotlin.contracts.InvocationKind.AT_MOST_ONCE as AtMostOnce
+
+fun String.toUUIDOrNone(): Option<UUID> = catch { UUID.fromString(this) }
 
 /**
  * This function is an inline function that takes a block of code and wraps it in an `EitherNel` type.

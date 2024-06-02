@@ -46,7 +46,7 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         DbError.RefreshTokenAlreadyRevoked -> BadRequest
         DbError.RefreshTokenStillValid -> BadRequest
         DbError.RegistrationTokenAlreadyConfirmed -> BadRequest
-        DbError.RegistrationTokenAlreadyExpired -> BadRequest
+        DbError.RegistrationTokenExpired -> BadRequest
         DbError.RegistrationTokenNotConfirmed -> BadRequest
         DbError.RegistrationTokenStillValid -> BadRequest
         DbError.UserNotFound -> NotFound
