@@ -75,6 +75,22 @@ sealed interface ValidationError : DomainError {
             data object TooLongEmail : EmailValidationError
         }
 
+        sealed interface FirstNameValidationError : UserValidationError {
+            data object TooShortFirstName : FirstNameValidationError
+
+            data object TooLongFirstName : FirstNameValidationError
+        }
+
+        sealed interface LastNameValidationError : UserValidationError {
+            data object TooShortLastName : LastNameValidationError
+
+            data object TooLongLastName : LastNameValidationError
+        }
+
+        sealed interface BioValidationError : UserValidationError {
+            data object TooLongBio : BioValidationError
+        }
+
         sealed interface PasswordValidationError : UserValidationError {
             data object TooShortPassword : PasswordValidationError
 

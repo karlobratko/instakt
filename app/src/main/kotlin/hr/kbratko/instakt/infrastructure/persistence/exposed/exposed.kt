@@ -3,14 +3,27 @@ package hr.kbratko.instakt.infrastructure.persistence.exposed
 import arrow.core.None
 import arrow.core.Some
 import arrow.core.toOption
+import hr.kbratko.instakt.domain.conversion.ConversionScope
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.experimental.withSuspendTransaction
 import kotlin.coroutines.CoroutineContext
+
+data class ColumnSelection<T>(
+    val columns: List<Column<*>>,
+    val conversion: ConversionScope<ResultRow, T>
+) {
+    constructor(vararg columns: Column<*>, conversion: ConversionScope<ResultRow, T>) : this(
+        columns.toList(),
+        conversion
+    )
+}
 
 suspend fun <T> ioTransaction(
     context: CoroutineContext = Dispatchers.IO,

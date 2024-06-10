@@ -1,5 +1,6 @@
 package hr.kbratko.instakt.infrastructure.routes
 
+import hr.kbratko.instakt.infrastructure.routes.account.profile
 import hr.kbratko.instakt.infrastructure.routes.auth.access
 import hr.kbratko.instakt.infrastructure.routes.auth.register
 import io.ktor.resources.Resource
@@ -17,7 +18,10 @@ fun Application.configureRoutes() {
 //
 //        openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
 
+        validation()
+
         register()
         access()
+        profile()
     }
 }

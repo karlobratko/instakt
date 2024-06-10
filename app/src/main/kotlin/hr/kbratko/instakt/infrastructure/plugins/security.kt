@@ -31,8 +31,7 @@ fun Application.configureSecurity() {
     }
 }
 
-fun Route.jwt(build: Route.() -> Unit) {
+fun Route.jwt(build: Route.() -> Unit) =
     authenticate("jwt", strategy = Required) {
         build()
     }
-}

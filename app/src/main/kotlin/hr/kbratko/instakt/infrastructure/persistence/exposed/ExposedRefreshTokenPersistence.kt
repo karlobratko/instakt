@@ -170,9 +170,7 @@ fun ExposedRefreshTokenPersistence(db: Database, config: RefreshTokenPersistence
         }
     }
 
-typealias ResultRowToRefreshTokenConversionScope = ConversionScope<ResultRow, RefreshToken>
-
-val ResultRowToRefreshTokenConversion = ResultRowToRefreshTokenConversionScope {
+val ResultRowToRefreshTokenConversion = ConversionScope<ResultRow, RefreshToken> {
     RefreshToken(
         Token.Refresh(this[RefreshTokensTable.id].value.toString()),
         User.Id(this[RefreshTokensTable.userId].value),
@@ -183,9 +181,7 @@ val ResultRowToRefreshTokenConversion = ResultRowToRefreshTokenConversionScope {
     )
 }
 
-typealias ResultRowToStatusRefreshTokensConversionScope = ConversionScope<ResultRow, RefreshToken.Status>
-
-val ResultRowToRefreshTokenStatusConversion = ResultRowToStatusRefreshTokensConversionScope {
+val ResultRowToRefreshTokenStatusConversion = ConversionScope<ResultRow, RefreshToken.Status> {
     this[RefreshTokensTable.revokedAt]
         ?.let { Revoked(it.toKotlinInstant()) }
         ?: Active

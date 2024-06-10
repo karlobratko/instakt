@@ -3,6 +3,7 @@ package hr.kbratko.instakt.infrastructure.routes
 import arrow.core.Either
 import arrow.core.EitherNel
 import arrow.core.Nel
+import arrow.core.toEitherNel
 import arrow.core.toNonEmptyListOrNull
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.config.DefaultInstantProvider
@@ -112,6 +113,10 @@ fun <Error> Nel<Error>.toFailure(onErrorConversionScope: ConversionScope<Nel<Err
  */
 fun <Error> Nel<Error>.toFailure(onErrorMapper: (Nel<Error>) -> HttpStatusCode) =
     Response.Failure(map { it.toString() }, onErrorMapper.invoke(this))
+
+fun <A> Either<DomainError, A>.toResponse(
+    onSuccessStatusCode: HttpStatusCode
+) = toEitherNel().toResponse(NelErrorToHttpStatusCodeConversion, onSuccessStatusCode)
 
 /**
  * Extension function on EitherNel<DomainError, A> to convert it into a Response.

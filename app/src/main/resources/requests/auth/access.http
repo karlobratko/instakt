@@ -21,7 +21,7 @@ Content-Type: application/json
 }
 
 > {%
-    if (parseInt(response.body.code) !== 200) {
+    if (parseInt(response.body.code) === 200) {
         client.global.set("access_token", response.body.data.accessToken);
         client.global.set("refresh_token", response.body.data.refreshToken);
     }

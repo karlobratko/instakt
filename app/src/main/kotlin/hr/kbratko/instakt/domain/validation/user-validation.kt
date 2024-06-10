@@ -1,9 +1,17 @@
 package hr.kbratko.instakt.domain.validation
 
 import arrow.core.raise.ensure
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.BioValidationError
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.BioValidationError.TooLongBio
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.EmailValidationError
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.EmailValidationError.InvalidEmail
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.EmailValidationError.TooLongEmail
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.FirstNameValidationError
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.FirstNameValidationError.TooLongFirstName
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.FirstNameValidationError.TooShortFirstName
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.LastNameValidationError
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.LastNameValidationError.TooLongLastName
+import hr.kbratko.instakt.domain.ValidationError.UserValidationError.LastNameValidationError.TooShortLastName
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.PasswordValidationError
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.PasswordValidationError.NoDigitsInPassword
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.PasswordValidationError.NoSpecialCharsInPassword
@@ -39,6 +47,32 @@ val EmailIsValid = EmailValidationScope {
     }
 }
 
+typealias FirstNameValidationScope = ValidationScope<FirstNameValidationError, String>
+
+val FirstNameIsValid = FirstNameValidationScope {
+    validate(this) {
+        with(StringMinLengthValidation(3) { TooShortFirstName })
+        with(StringMaxLengthValidation(50) { TooLongFirstName })
+    }
+}
+
+typealias LastNameValidationScope = ValidationScope<LastNameValidationError, String>
+
+val LastNameIsValid = LastNameValidationScope {
+    validate(this) {
+        with(StringMinLengthValidation(3) { TooShortLastName })
+        with(StringMaxLengthValidation(50) { TooLongLastName })
+    }
+}
+
+typealias BioValidationScope = ValidationScope<BioValidationError, String>
+
+val BioIsValid = BioValidationScope {
+    validate(this) {
+        with(StringMaxLengthValidation(1024) { TooLongBio })
+    }
+}
+
 typealias PasswordValidationScope = ValidationScope<PasswordValidationError, String>
 
 const val SPECIAL_CHARACTERS = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
@@ -58,7 +92,7 @@ val PasswordIsValid =
 
 typealias RoleValidationScope = ValidationScope<RoleValidationError, User.Role>
 
-val ALLOWED_CREATION_ROLES = listOf(User.Role.User)
+val ALLOWED_CREATION_ROLES = listOf(User.Role.Regular)
 
 val RoleIsNotAdmin = RoleValidationScope {
     applyWrapEitherNel {

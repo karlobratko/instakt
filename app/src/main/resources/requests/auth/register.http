@@ -5,8 +5,10 @@ Content-Type: application/json
 {
   "username": "kbratko",
   "email": "kbratko@algebra.com",
+  "firstName": "Karlo",
+  "lastName": "Bratko",
   "password": "Pa$$w0rd",
-  "role": "User",
+  "role": "Regular",
   "redirectUrl": "http://localhost:3000/confirm-registration"
 }
 
@@ -15,7 +17,7 @@ POST http://localhost:8080/api/v1/auth/register/confirm
 Content-Type: application/json
 
 {
-  "token": "dab3913c-22c6-4442-9e64-784e0f290ecf"
+  "token": "cbe41b14-56fc-4a0f-944f-35c43067244c"
 }
 
 ###
@@ -24,7 +26,7 @@ Content-Type: application/json
 
 {
   "type": "token",
-  "token": "dab3913c-22c6-4442-9e64-784e0f290ecf",
+  "token": "cbe41b14-56fc-4a0f-944f-35c43067244c",
   "redirectUrl": "http://localhost:3000/confirm-registration"
 }
 

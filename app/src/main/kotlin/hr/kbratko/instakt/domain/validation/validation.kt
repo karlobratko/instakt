@@ -1,15 +1,14 @@
 package hr.kbratko.instakt.domain.validation
 
-import arrow.core.Either.Companion.catch
 import arrow.core.EitherNel
 import arrow.core.left
 import arrow.core.raise.ensure
 import arrow.core.right
-import arrow.core.toEitherNel
 import arrow.core.toNonEmptyListOrNone
 import hr.kbratko.instakt.domain.applyWrapEitherNel
+import hr.kbratko.instakt.domain.toEitherNel
+import hr.kbratko.instakt.domain.toUUIDOrNone
 import java.math.BigDecimal
-import java.util.UUID
 import kotlinx.datetime.Instant
 
 fun interface ValidationScope<Error, A> {
@@ -96,10 +95,7 @@ fun <Error> StringAllSatisfiesPredicateValidation(predicate: (Char) -> Boolean, 
     }
 
 fun <Error> StringIsUUIDValidation(error: () -> Error) = StringValidationScope {
-    catch { UUID.fromString(this) }
-        .map { this }
-        .mapLeft { error() }
-        .toEitherNel()
+    this.toUUIDOrNone().map { this }.toEitherNel { error() }
 }
 
 inline fun <Error, reified E : Enum<E>> StringIsEnumValidation(crossinline error: () -> Error) = StringValidationScope validation@{

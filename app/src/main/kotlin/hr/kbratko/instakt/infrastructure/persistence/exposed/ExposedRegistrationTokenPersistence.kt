@@ -143,9 +143,7 @@ fun ExposedRegistrationTokenPersistence(db: Database, config: RegistrationTokenP
                 }
     }
 
-typealias ResultRowToRegistrationTokenConversionScope = ConversionScope<ResultRow, RegistrationToken>
-
-val ResultRowToRegistrationTokenConversion = ResultRowToRegistrationTokenConversionScope {
+val ResultRowToRegistrationTokenConversion = ConversionScope<ResultRow, RegistrationToken> {
     RegistrationToken(
         Token.Register(this[RegistrationTokensTable.id].value.toString()),
         this[RegistrationTokensTable.createdAt].toKotlinInstant(),
@@ -154,9 +152,7 @@ val ResultRowToRegistrationTokenConversion = ResultRowToRegistrationTokenConvers
     )
 }
 
-typealias ResultRowToRegistrationTokenStatusConversionScope = ConversionScope<ResultRow, RegistrationToken.Status>
-
-val ResultRowToRegistrationTokenStatusConversion = ResultRowToRegistrationTokenStatusConversionScope {
+val ResultRowToRegistrationTokenStatusConversion = ConversionScope<ResultRow, RegistrationToken.Status> {
     this[RegistrationTokensTable.confirmedAt]
         ?.let { Confirmed(it.toKotlinInstant()) }
         ?: Unconfirmed

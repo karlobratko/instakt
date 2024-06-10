@@ -75,5 +75,10 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.UserValidationError.RoleValidationError.AdminCanNotBeCreated -> BadRequest
         ValidationError.UserValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern -> BadRequest
         ValidationError.UserValidationError.RoleValidationError.InvalidUserRole -> BadRequest
+        ValidationError.UserValidationError.FirstNameValidationError.TooLongFirstName -> BadRequest
+        ValidationError.UserValidationError.FirstNameValidationError.TooShortFirstName -> BadRequest
+        ValidationError.UserValidationError.LastNameValidationError.TooLongLastName -> BadRequest
+        ValidationError.UserValidationError.LastNameValidationError.TooShortLastName -> BadRequest
+        ValidationError.UserValidationError.BioValidationError.TooLongBio -> BadRequest
     }
 }
