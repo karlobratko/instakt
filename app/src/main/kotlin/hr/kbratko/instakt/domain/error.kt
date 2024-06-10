@@ -26,11 +26,13 @@ sealed interface DbError : DomainError {
 
     data object InvalidUsernameOrPassword : DbError
 
+    data object InvalidPassword : DbError
+
     data object InvalidRefreshToken : DbError
 
     data object RefreshTokenAlreadyRevoked : DbError
 
-    data object InvalidRegistrationToken : DbError
+    data object UnknownRegistrationToken : DbError
 
     data object RegistrationTokenAlreadyConfirmed : DbError
 
@@ -43,6 +45,10 @@ sealed interface DbError : DomainError {
     data object RegistrationTokenNotConfirmed : DbError
 
     data object UserNotFound : DbError
+
+    data object PasswordResetTokenStillValid : DbError
+
+    data object UnknownPasswordResetToken : DbError
 }
 
 sealed interface SecurityError : DomainError {

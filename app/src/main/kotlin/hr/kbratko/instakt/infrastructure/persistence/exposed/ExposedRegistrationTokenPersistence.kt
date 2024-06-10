@@ -1,43 +1,41 @@
 package hr.kbratko.instakt.infrastructure.persistence.exposed
 
 import arrow.core.Either
-import arrow.core.Option
+import arrow.core.None
+import arrow.core.Some
 import arrow.core.raise.either
+import arrow.core.raise.ensure
 import arrow.core.singleOrNone
-import hr.kbratko.instakt.domain.DbError.InvalidRegistrationToken
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenAlreadyConfirmed
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenExpired
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenStillValid
+import hr.kbratko.instakt.domain.DbError.UnknownRegistrationToken
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.config.DefaultInstantProvider
-import hr.kbratko.instakt.domain.conversion.ConversionScope
-import hr.kbratko.instakt.domain.conversion.convert
 import hr.kbratko.instakt.domain.getOrRaise
-import hr.kbratko.instakt.domain.model.RegistrationToken
-import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Confirmed
-import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Unconfirmed
+import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.security.Token
-import hr.kbratko.instakt.domain.security.toUUIDOrNone
 import hr.kbratko.instakt.domain.toKotlinInstant
+import hr.kbratko.instakt.domain.toKotlinInstantOrNone
+import hr.kbratko.instakt.domain.toUUIDOrNone
 import java.time.ZoneOffset.UTC
-import java.util.UUID
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import kotlin.time.Duration
+import org.jetbrains.exposed.sql.ReferenceOption.CASCADE as Cascade
 import org.jetbrains.exposed.sql.SchemaUtils.create as createIfNotExists
 
 object RegistrationTokensTable : UUIDTable("registration_tokens", "registration_token_pk") {
+    val userId = reference("user_fk", UsersTable, onDelete = Cascade)
     val createdAt = timestampWithTimeZone("created_at")
     val expiresAt = timestampWithTimeZone("expires_at")
     val confirmedAt = timestampWithTimeZone("confirmed_at").nullable()
@@ -53,107 +51,80 @@ fun ExposedRegistrationTokenPersistence(db: Database, config: RegistrationTokenP
             }
         }
 
-        override suspend fun insert(): Token.Register = ioTransaction(db = db) {
-            val id = RegistrationTokensTable.insertAndGetId {
-                val createdAt = DefaultInstantProvider.now()
+        override suspend fun insert(userId: User.Id): Either<DomainError, Token.Register> = either {
+            ioTransaction(db = db) {
+                RegistrationTokensTable
+                    .select(
+                        RegistrationTokensTable.confirmedAt,
+                        RegistrationTokensTable.expiresAt
+                    )
+                    .where { RegistrationTokensTable.userId eq userId.value }
+                    .singleOrNone()
+                    .fold(
+                        ifEmpty = { cleanAndInsert(userId) },
+                        ifSome = { row ->
+                            row[RegistrationTokensTable.confirmedAt].toKotlinInstantOrNone()
+                                .fold(
+                                    ifEmpty = {
+                                        val expiresAt = row[RegistrationTokensTable.expiresAt].toKotlinInstant()
+                                        val now = DefaultInstantProvider.now()
+                                        ensure(now > expiresAt) { RegistrationTokenStillValid }
 
-                it[this.createdAt] = createdAt.toJavaInstant().atOffset(UTC)
-                it[expiresAt] = (createdAt + config.expiresAfter).toJavaInstant().atOffset(UTC)
+                                        cleanAndInsert(userId, now)
+                                    },
+                                    ifSome = { raise(RegistrationTokenAlreadyConfirmed) }
+                                )
+                        }
+                    )
             }
-
-            Token.Register(id.value.toString())
-        }
-
-        override suspend fun select(token: Token.Register): Option<RegistrationToken> = ioTransaction(db = db) {
-            token.toUUIDOrNone()
-                .flatMap { id ->
-                    RegistrationTokensTable
-                        .selectAll()
-                        .where { RegistrationTokensTable.id eq id }
-                        .singleOrNone()
-                        .map { it.convert(ResultRowToRegistrationTokenConversion) }
-                }
         }
 
         override suspend fun confirm(token: Token.Register): Either<DomainError, Token.Register> = either {
             ioTransaction(db = db) {
-                val (id, status, expiresAt) = selectTokenStatusAndExpiresAt(token).getOrRaise { InvalidRegistrationToken }
+                val registrationToken = token.value.toUUIDOrNone().getOrRaise { UnknownRegistrationToken }
+                val (status, expiresAt) = RegistrationTokensTable
+                    .select(
+                        RegistrationTokensTable.confirmedAt,
+                        RegistrationTokensTable.expiresAt
+                    )
+                    .where { RegistrationTokensTable.id eq registrationToken }
+                    .singleOrNone()
+                    .map { row ->
+                        Pair(
+                            row[RegistrationTokensTable.confirmedAt].toKotlinInstantOrNone(),
+                            row[RegistrationTokensTable.expiresAt].toKotlinInstant()
+                        )
+                    }
+                    .getOrRaise { UnknownRegistrationToken }
 
                 when (status) {
-                    is Unconfirmed -> {
+                    None -> {
                         val now = DefaultInstantProvider.now()
+                        ensure(now <= expiresAt) { RegistrationTokenExpired }
 
-                        if (now > expiresAt)
-                            raise(RegistrationTokenExpired)
-
-                        RegistrationTokensTable.update({ RegistrationTokensTable.id eq id }) {
+                        RegistrationTokensTable.update({ RegistrationTokensTable.id eq registrationToken }) {
                             it[confirmedAt] = now.toJavaInstant().atOffset(UTC)
                         }
 
                         token
                     }
 
-                    is Confirmed -> {
+                    is Some -> {
                         raise(RegistrationTokenAlreadyConfirmed)
                     }
                 }
             }
         }
 
-        override suspend fun delete(token: Token.Register): Either<DomainError, Token.Register> = either {
-            ioTransaction(db = db) {
-                val (id, status, expiresAt) = selectTokenStatusAndExpiresAt(token).getOrRaise { InvalidRegistrationToken }
+        private fun cleanAndInsert(userId: User.Id, now: Instant = DefaultInstantProvider.now()): Token.Register {
+            RegistrationTokensTable.deleteWhere { RegistrationTokensTable.userId eq userId.value }
 
-                when (status) {
-                    is Unconfirmed -> {
-                        val now = DefaultInstantProvider.now()
-
-                        if (now <= expiresAt)
-                            raise(RegistrationTokenStillValid)
-
-                        RegistrationTokensTable.deleteWhere { RegistrationTokensTable.id eq id }
-
-                        token
-                    }
-
-                    is Confirmed -> {
-                        raise(RegistrationTokenAlreadyConfirmed)
-                    }
-                }
+            val id = RegistrationTokensTable.insertAndGetId {
+                it[this.userId] = userId.value
+                it[this.createdAt] = now.toJavaInstant().atOffset(UTC)
+                it[expiresAt] = (now + config.expiresAfter).toJavaInstant().atOffset(UTC)
             }
-        }
 
-        private fun selectTokenStatusAndExpiresAt(token: Token.Register): Option<Triple<UUID, RegistrationToken.Status, Instant>> =
-            token.toUUIDOrNone()
-                .flatMap { id ->
-                    RegistrationTokensTable
-                        .select(
-                            RegistrationTokensTable.confirmedAt,
-                            RegistrationTokensTable.expiresAt
-                        )
-                        .where { RegistrationTokensTable.id eq id }
-                        .singleOrNone()
-                        .map {
-                            Triple(
-                                id,
-                                it.convert(ResultRowToRegistrationTokenStatusConversion),
-                                it[RegistrationTokensTable.expiresAt].toKotlinInstant()
-                            )
-                        }
-                }
+            return Token.Register(id.value.toString())
+        }
     }
-
-val ResultRowToRegistrationTokenConversion = ConversionScope<ResultRow, RegistrationToken> {
-    RegistrationToken(
-        Token.Register(this[RegistrationTokensTable.id].value.toString()),
-        this[RegistrationTokensTable.createdAt].toKotlinInstant(),
-        this[RegistrationTokensTable.expiresAt].toKotlinInstant(),
-        this.convert(ResultRowToRegistrationTokenStatusConversion)
-    )
-}
-
-val ResultRowToRegistrationTokenStatusConversion = ConversionScope<ResultRow, RegistrationToken.Status> {
-    this[RegistrationTokensTable.confirmedAt]
-        ?.let { Confirmed(it.toKotlinInstant()) }
-        ?: Unconfirmed
-}

@@ -3,6 +3,8 @@ package hr.kbratko.instakt.infrastructure.routes.auth
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.toEitherNel
+import hr.kbratko.instakt.domain.DbError.UnknownRegistrationToken
+import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.eitherNel
 import hr.kbratko.instakt.domain.mailing.Email
@@ -69,17 +71,18 @@ fun Route.register() {
     val senders by inject<Senders>()
     val mailingService by inject<MailingService>()
 
-    val sendConfirmRegistrationEmail: suspend (User, String) -> Either<DomainError, Email> = { user, redirectUrl ->
-        mailingService
-            .send(
-                ConfirmRegistration(
-                    from = senders.auth,
-                    email = user.email,
-                    username = user.username,
-                    confirmUrl = "${redirectUrl}?registrationToken=${user.registrationToken.value}"
+    val sendConfirmRegistrationEmail: suspend (User, Token.Register, String) -> Either<DomainError, Email> =
+        { user, registrationToken, redirectUrl ->
+            mailingService
+                .send(
+                    ConfirmRegistration(
+                        from = senders.auth,
+                        email = user.email,
+                        username = user.username,
+                        confirmUrl = "${redirectUrl}?registrationToken=${registrationToken.value}"
+                    )
                 )
-            )
-    }
+        }
 
     restrictedRateLimit {
         post<Register, Register.Body> { _, body ->
@@ -95,7 +98,9 @@ fun Route.register() {
                     )
                 ).toEitherNel().bind()
 
-                sendConfirmRegistrationEmail(user, body.redirectUrl).toEitherNel().bind()
+                val registrationToken = registrationTokenPersistence.insert(user.id).toEitherNel().bind()
+
+                sendConfirmRegistrationEmail(user, registrationToken, body.redirectUrl).toEitherNel().bind()
             }.toResponse(HttpStatusCode.Created).let { call.respond(it.code, it) }
         }
 
@@ -108,11 +113,15 @@ fun Route.register() {
         post<Register.Reset, Register.Reset.Body> { _, body ->
             either<DomainError, Unit> {
                 val user = when (body) {
-                    is Register.Reset.Body.WithEmail -> userPersistence.resetRegistrationToken(User.Email(body.email))
-                    is Register.Reset.Body.WithToken -> userPersistence.resetRegistrationToken(Token.Register(body.token))
+                    is Register.Reset.Body.WithEmail -> userPersistence.select(User.Email(body.email))
+                        .toEither { UserNotFound }
+
+                    is Register.Reset.Body.WithToken -> userPersistence.select(Token.Register(body.token))
+                        .toEither { UnknownRegistrationToken }
                 }.bind()
 
-                sendConfirmRegistrationEmail(user, body.redirectUrl).bind()
+                val registrationToken = registrationTokenPersistence.insert(user.id).bind()
+                sendConfirmRegistrationEmail(user, registrationToken, body.redirectUrl).bind()
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
         }
     }

@@ -13,7 +13,9 @@ interface UserPersistence {
 
     suspend fun select(username: Username): Option<User>
 
-    suspend fun select(id: User.Id): Option<User>
+    suspend fun select(email: User.Email): Option<User>
+
+    suspend fun select(token: Token.Register): Option<User>
 
     suspend fun selectProfile(id: User.Id): Option<User.Profile>
 
@@ -23,9 +25,5 @@ interface UserPersistence {
 
     suspend fun update(data: User.ChangePassword): Either<DomainError, Unit>
 
-    suspend fun delete(id: User.Id): Either<DomainError, User.Id>
-
-    suspend fun resetRegistrationToken(email: User.Email): Either<DomainError, User>
-
-    suspend fun resetRegistrationToken(token: Token.Register): Either<DomainError, User>
+    suspend fun update(data: User.ResetPassword): Either<DomainError, Unit>
 }

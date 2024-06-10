@@ -3,9 +3,11 @@ package hr.kbratko.instakt.infrastructure.persistence
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import hr.kbratko.instakt.domain.toDuration
+import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedPasswordResetTokenPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedRefreshTokenPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedRegistrationTokenPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedUserPersistence
+import hr.kbratko.instakt.infrastructure.persistence.exposed.PasswordResetTokenPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.exposed.RefreshTokenPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.exposed.RegistrationTokenPersistenceConfig
 import hr.kbratko.instakt.infrastructure.serialization.Resources
@@ -27,13 +29,13 @@ fun Application.PersistenceModule() =
 
             val dataSource = HikariDataSource(
                 HikariConfig().apply {
-                    jdbcUrl = db.property("jdbc-url").getString()
-                    driverClassName = db.property("data-source.driver-class").getString()
+                    jdbcUrl = db.property("jdbcUrl").getString()
+                    driverClassName = db.property("dataSource.driverClass").getString()
                     secrets.also {
                         username = it.username
                         password = it.password
                     }
-                    maximumPoolSize = db.property("maximum-pool-size").getString().toInt()
+                    maximumPoolSize = db.property("maximumPoolSize").getString().toInt()
                 }
             )
 
@@ -63,9 +65,17 @@ fun Application.PersistenceModule() =
             )
         }
 
+        single(createdAtStart = true) {
+            PasswordResetTokenPersistenceConfig(
+                auth.property("lasting.passwordReset").getString().toDuration()
+            )
+        }
+
         single { ExposedRegistrationTokenPersistence(get(), get()) }
 
-        single { ExposedUserPersistence(get(), get()) }
+        single { ExposedUserPersistence(get()) }
 
         single { ExposedRefreshTokenPersistence(get(), get()) }
+
+        single { ExposedPasswordResetTokenPersistence(get(), get()) }
     }

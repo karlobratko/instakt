@@ -2,7 +2,9 @@ package hr.kbratko.instakt.infrastructure.persistence.exposed
 
 import arrow.core.Either
 import arrow.core.Either.Companion.catchOrThrow
+import arrow.core.None
 import arrow.core.Option
+import arrow.core.Some
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.raise.either
@@ -11,7 +13,7 @@ import arrow.core.right
 import arrow.core.singleOrNone
 import arrow.core.toOption
 import hr.kbratko.instakt.domain.DbError.EmailAlreadyExists
-import hr.kbratko.instakt.domain.DbError.InvalidRegistrationToken
+import hr.kbratko.instakt.domain.DbError.InvalidPassword
 import hr.kbratko.instakt.domain.DbError.InvalidUsernameOrPassword
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenNotConfirmed
 import hr.kbratko.instakt.domain.DbError.UserNotFound
@@ -20,39 +22,31 @@ import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.conversion.convert
 import hr.kbratko.instakt.domain.getOrRaise
 import hr.kbratko.instakt.domain.model.Image
-import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Confirmed
-import hr.kbratko.instakt.domain.model.RegistrationToken.Status.Unconfirmed
 import hr.kbratko.instakt.domain.model.User
-import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.toKotlinInstantOrNone
 import hr.kbratko.instakt.domain.toUUIDOrNone
 import hr.kbratko.instakt.infrastructure.persistence.exposed.UsersTable.profileSelection
 import hr.kbratko.instakt.infrastructure.persistence.exposed.UsersTable.userSelection
-import java.util.UUID
 import org.jetbrains.exposed.crypt.Encryptor
 import org.jetbrains.exposed.crypt.encryptedVarchar
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.postgresql.util.PSQLState.UNIQUE_VIOLATION
-import org.jetbrains.exposed.sql.ReferenceOption.CASCADE as Cascade
 import org.jetbrains.exposed.sql.SchemaUtils.create as createIfNotExists
-import org.springframework.security.crypto.bcrypt.BCrypt.checkpw as checkPassword
+import org.springframework.security.crypto.bcrypt.BCrypt.checkpw as comparePassword
 import org.springframework.security.crypto.bcrypt.BCrypt.gensalt as generateSalt
 import org.springframework.security.crypto.bcrypt.BCrypt.hashpw as hashPassword
 
 private const val USERNAME_UNIQUE_INDEX = "users_username_unique_index"
 
 private const val EMAIL_UNIQUE_INDEX = "users_email_unique_index"
-
-private const val REGISTRATION_TOKEN_ID_INDEX = "users_registration_token_fk_unique_index"
 
 object UsersTable : LongIdTable("users", "user_pk") {
     val username = varchar("username", 50).uniqueIndex(USERNAME_UNIQUE_INDEX)
@@ -67,15 +61,12 @@ object UsersTable : LongIdTable("users", "user_pk") {
         Encryptor({ hashPassword(it, generateSalt()) }, { it }, { it })
     )
     val role = enumeration<User.Role>("role")
-    val registrationTokenId = reference("registration_token_fk", RegistrationTokensTable)
-        .uniqueIndex(REGISTRATION_TOKEN_ID_INDEX)
 
-    val userSelection = ColumnSelection(id, username, email, registrationTokenId, role) {
+    val userSelection = ColumnSelection(id, username, email, role) {
         User(
             User.Id(this[id].value),
             User.Username(this[username]),
             User.Email(this[email]),
-            Token.Register(this[registrationTokenId].value.toString()),
             this[role]
         )
     }
@@ -92,13 +83,7 @@ object UsersTable : LongIdTable("users", "user_pk") {
     }
 }
 
-object SocialMediaLinksTable : LongIdTable("social_media_link_pk") {
-    val userId = reference("user_fk", UsersTable, onDelete = Cascade)
-    val platform = varchar("platform", 100)
-    val url = varchar("url", 256)
-}
-
-fun ExposedUserPersistence(db: Database, registrationTokenPersistence: RegistrationTokenPersistence) =
+fun ExposedUserPersistence(db: Database) =
     object : UserPersistence {
         init {
             transaction {
@@ -108,8 +93,6 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
 
         override suspend fun insert(user: User.New): Either<DomainError, User> = either {
             ioTransaction(db = db) {
-                val insertedRegistrationTokenId = registrationTokenPersistence.insert()
-
                 val id = catchOrThrow<ExposedSQLException, EntityID<Long>> {
                     UsersTable.insertAndGetId {
                         it[username] = user.username.value
@@ -118,7 +101,6 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
                         it[lastName] = user.lastName.value
                         it[passwordHash] = user.password.value
                         it[role] = user.role
-                        it[registrationTokenId] = UUID.fromString(insertedRegistrationTokenId.value)
                     }
                 }.mapLeft { it.convert(ExposedSQLExceptionToDbErrorConversion) }.bind()
 
@@ -138,6 +120,25 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
                 .map { it.convert(userSelection.conversion) }
         }
 
+        override suspend fun select(email: User.Email): Option<User> = ioTransaction(db = db) {
+            UsersTable
+                .select(userSelection.columns)
+                .where { UsersTable.email eq email.value }
+                .singleOrNone()
+                .map { it.convert(userSelection.conversion) }
+        }
+
+        override suspend fun select(token: Token.Register): Option<User> = ioTransaction(db = db) {
+            token.value.toUUIDOrNone()
+                .flatMap { registrationTokenId ->
+                    (UsersTable innerJoin RegistrationTokensTable)
+                        .select(userSelection.columns)
+                        .where { (RegistrationTokensTable.id eq registrationTokenId) }
+                        .singleOrNone()
+                        .map { it.convert(userSelection.conversion) }
+                }
+        }
+
         override suspend fun select(
             username: User.Username,
             password: User.Password
@@ -149,16 +150,15 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
                     UsersTable.email,
                     UsersTable.passwordHash,
                     UsersTable.role,
-                    UsersTable.registrationTokenId,
                     RegistrationTokensTable.confirmedAt
                 )
                 .where { (UsersTable.username eq username.value) }
-                .singleOrNone { checkPassword(password.value, it[UsersTable.passwordHash]) }
+                .singleOrNone { comparePassword(password.value, it[UsersTable.passwordHash]) }
                 .toEither { InvalidUsernameOrPassword }
                 .flatMap {
-                    when (it.convert(ResultRowToRegistrationTokenStatusConversion)) {
-                        is Confirmed -> it.convert(userSelection.conversion).right()
-                        is Unconfirmed -> RegistrationTokenNotConfirmed.left()
+                    when (it[RegistrationTokensTable.confirmedAt].toKotlinInstantOrNone()) {
+                        is Some -> it.convert(userSelection.conversion).right()
+                        is None -> RegistrationTokenNotConfirmed.left()
                     }
                 }
         }
@@ -169,14 +169,6 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
                 .where { UsersTable.id eq id.value }
                 .singleOrNone()
                 .map { it.convert(profileSelection.conversion) }
-        }
-
-        override suspend fun select(id: User.Id): Option<User> = ioTransaction(db = db) {
-            UsersTable
-                .select(userSelection.columns)
-                .where { UsersTable.id eq id.value }
-                .singleOrNone()
-                .map { it.convert(userSelection.conversion) }
         }
 
         override suspend fun update(data: User.Edit): Either<DomainError, User.Profile> = either {
@@ -201,64 +193,30 @@ fun ExposedUserPersistence(db: Database, registrationTokenPersistence: Registrat
 
         override suspend fun update(data: User.ChangePassword): Either<DomainError, Unit> = either {
             ioTransaction(db = db) {
+                val passwordHash = UsersTable
+                    .select(UsersTable.passwordHash)
+                    .where { UsersTable.id eq data.id.value }
+                    .singleOrNone()
+                    .map { it[UsersTable.passwordHash] }
+                    .getOrRaise { UserNotFound }
+
+                ensure(comparePassword(data.oldPassword.value, passwordHash)) { InvalidPassword }
+
                 val updatedCount = UsersTable.update({ UsersTable.id eq data.id.value }) {
-                    it[passwordHash] = data.newPassword.value
+                    it[this.passwordHash] = data.newPassword.value
                 }
 
                 ensure(updatedCount > 0) { UserNotFound }
             }
         }
 
-        override suspend fun delete(id: User.Id): Either<DomainError, User.Id> = either {
+        override suspend fun update(data: User.ResetPassword): Either<DomainError, Unit> = either {
             ioTransaction(db = db) {
-                val deletedCount = UsersTable.deleteWhere { UsersTable.id eq id.value }
+                val updatedCount = UsersTable.update({ UsersTable.id eq data.id.value }) {
+                    it[passwordHash] = data.newPassword.value
+                }
 
-                ensure(deletedCount > 0) { UserNotFound }
-
-                id
-            }
-        }
-
-        override suspend fun resetRegistrationToken(email: User.Email): Either<DomainError, User> = either {
-            ioTransaction(db = db) {
-                val user = UsersTable
-                    .select(userSelection.columns)
-                    .where { UsersTable.email eq email.value }
-                    .singleOrNone()
-                    .map { it.convert(userSelection.conversion) }
-                    .getOrRaise { UserNotFound }
-
-                resetRegistrationToken(user).bind()
-            }
-        }
-
-        override suspend fun resetRegistrationToken(token: Token.Register): Either<DomainError, User> = either {
-            ioTransaction(db = db) {
-                val registrationTokenId = token.value.toUUIDOrNone().toEither { InvalidRegistrationToken }.bind()
-                val user = UsersTable
-                    .select(userSelection.columns)
-                    .where { UsersTable.registrationTokenId eq registrationTokenId }
-                    .singleOrNone()
-                    .map { it.convert(userSelection.conversion) }
-                    .getOrRaise { UserNotFound }
-
-                resetRegistrationToken(user).bind()
-            }
-        }
-
-        suspend fun resetRegistrationToken(user: User): Either<DomainError, User> = either {
-            ioTransaction(db = db) {
-                val insertedRegistrationTokenId = registrationTokenPersistence.insert()
-
-                catchOrThrow<ExposedSQLException, Int> {
-                    UsersTable.update({ UsersTable.id eq user.id.value }) {
-                        it[registrationTokenId] = UUID.fromString(insertedRegistrationTokenId.value)
-                    }
-                }.mapLeft { it.convert(ExposedSQLExceptionToDbErrorConversion) }.bind()
-
-                registrationTokenPersistence.delete(user.registrationToken).bind()
-
-                user.copy(registrationToken = insertedRegistrationTokenId)
+                ensure(updatedCount > 0) { UserNotFound }
             }
         }
     }

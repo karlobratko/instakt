@@ -6,7 +6,6 @@ package hr.kbratko.instakt.domain.model
 
 import arrow.core.Option
 import arrow.core.serialization.OptionSerializer
-import hr.kbratko.instakt.domain.security.Token
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 
@@ -15,7 +14,6 @@ data class User(
     val id: Id,
     val username: Username,
     val email: Email,
-    val registrationToken: Token.Register,
     val role: Role
 ) {
     @Serializable
@@ -50,6 +48,11 @@ data class User(
         val newPassword: Password
     )
 
+    data class ResetPassword(
+        val id: Id,
+        val newPassword: Password
+    )
+
     @Serializable @JvmInline value class Id(val value: Long)
 
     @Serializable @JvmInline value class Username(val value: String)
@@ -63,8 +66,6 @@ data class User(
     @Serializable @JvmInline value class Bio(val value: String)
 
     @Serializable @JvmInline value class Password(val value: String)
-
-    @Serializable @JvmInline value class PasswordHash(val value: String)
 
     enum class Role {
         Admin,

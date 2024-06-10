@@ -14,6 +14,7 @@ import hr.kbratko.instakt.domain.validation.StringIsEnumValidation
 import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
 import hr.kbratko.instakt.domain.validation.UsernameIsValid
 import hr.kbratko.instakt.domain.validation.validate
+import hr.kbratko.instakt.infrastructure.routes.account.PasswordReset
 import hr.kbratko.instakt.infrastructure.routes.account.Profile
 import hr.kbratko.instakt.infrastructure.routes.auth.Access
 import hr.kbratko.instakt.infrastructure.routes.auth.Register
@@ -74,6 +75,19 @@ fun Routing.validation() {
         validate<Profile.Password.Body> { request ->
             validate(request) {
                 with { it.oldPassword.validate(PasswordIsValid) }
+                with { it.newPassword.validate(PasswordIsValid) }
+            }.foldValidation()
+        }
+
+        validate<PasswordReset.Acquire.Body> { request ->
+            validate(request) {
+                with { it.redirectUrl.validate(StringMatchingPatternValidation(URL_PATTERN.toRegex()) { InvalidRedirectUrlPattern }) }
+                with { it.email.validate(EmailIsValid) }
+            }.foldValidation()
+        }
+
+        validate<PasswordReset.Body> { request ->
+            validate(request) {
                 with { it.newPassword.validate(PasswordIsValid) }
             }.foldValidation()
         }

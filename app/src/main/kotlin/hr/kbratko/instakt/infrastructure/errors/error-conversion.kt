@@ -41,7 +41,7 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
     when (this) {
         DbError.EmailAlreadyExists -> BadRequest
         DbError.InvalidRefreshToken -> NotFound
-        DbError.InvalidRegistrationToken -> NotFound
+        DbError.UnknownRegistrationToken -> NotFound
         DbError.InvalidUsernameOrPassword -> NotFound
         DbError.RefreshTokenAlreadyRevoked -> BadRequest
         DbError.RefreshTokenStillValid -> BadRequest
@@ -80,5 +80,8 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.UserValidationError.LastNameValidationError.TooLongLastName -> BadRequest
         ValidationError.UserValidationError.LastNameValidationError.TooShortLastName -> BadRequest
         ValidationError.UserValidationError.BioValidationError.TooLongBio -> BadRequest
+        DbError.InvalidPassword -> BadRequest
+        DbError.PasswordResetTokenStillValid -> BadRequest
+        DbError.UnknownPasswordResetToken -> NotFound
     }
 }

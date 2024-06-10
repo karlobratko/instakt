@@ -1,5 +1,6 @@
 package hr.kbratko.instakt.infrastructure.routes
 
+import hr.kbratko.instakt.infrastructure.routes.account.passwordReset
 import hr.kbratko.instakt.infrastructure.routes.account.profile
 import hr.kbratko.instakt.infrastructure.routes.auth.access
 import hr.kbratko.instakt.infrastructure.routes.auth.register
@@ -23,5 +24,6 @@ fun Application.configureRoutes() {
         register()
         access()
         profile()
+        passwordReset()
     }
 }

@@ -2,6 +2,7 @@ package hr.kbratko.instakt.infrastructure.routes.account
 
 import arrow.core.raise.either
 import hr.kbratko.instakt.domain.DbError.UserNotFound
+import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.infrastructure.ktor.principal
@@ -28,9 +29,6 @@ data class Profile(val parent: Account = Account()) {
         val bio: String
     )
 
-    @Resource("{id}")
-    data class Id(val parent: Profile = Profile(), val id: Long)
-
     @Resource("/password")
     data class Password(val parent: Profile = Profile()) {
         @Serializable data class Body(
@@ -50,10 +48,13 @@ fun Route.profile() {
     val userPersistence by inject<UserPersistence>()
 
     permissiveRateLimit {
-        get<Profile.Id> { resource ->
-            either {
-                userPersistence.selectProfile(User.Id(resource.id)).toEither { UserNotFound }.bind()
-            }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
+        jwt {
+            get<Profile> {
+                either {
+                    val principal = call.principal<UserPrincipal>()
+                    userPersistence.selectProfile(principal.id).toEither { UserNotFound }.bind()
+                }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
+            }
         }
     }
 
@@ -66,16 +67,16 @@ fun Route.profile() {
                     userPersistence.update(
                         User.Edit(
                             principal.id,
-                            User.FirstName(body.bio),
-                            User.LastName(body.bio),
+                            User.FirstName(body.firstName),
+                            User.LastName(body.lastName),
                             User.Bio(body.bio)
                         )
                     ).bind()
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
 
-            post<Profile, Profile.Password.Body> { _, body ->
-                either {
+            post<Profile.Password, Profile.Password.Body> { _, body ->
+                either<DomainError, Unit> {
                     val principal = call.principal<UserPrincipal>()
 
                     userPersistence.update(

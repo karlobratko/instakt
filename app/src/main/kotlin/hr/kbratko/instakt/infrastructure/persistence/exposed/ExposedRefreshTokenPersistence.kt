@@ -1,7 +1,6 @@
 package hr.kbratko.instakt.infrastructure.persistence.exposed
 
 import arrow.core.Either
-import arrow.core.Option
 import arrow.core.raise.either
 import arrow.core.singleOrNone
 import hr.kbratko.instakt.domain.DbError.InvalidRefreshToken
@@ -18,8 +17,8 @@ import hr.kbratko.instakt.domain.model.RefreshToken.Status.Revoked
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RefreshTokenPersistence
 import hr.kbratko.instakt.domain.security.Token
-import hr.kbratko.instakt.domain.security.toUUIDOrNone
 import hr.kbratko.instakt.domain.toKotlinInstant
+import hr.kbratko.instakt.domain.toUUIDOrNone
 import java.time.ZoneOffset.UTC
 import kotlinx.datetime.toJavaInstant
 import org.jetbrains.exposed.dao.id.UUIDTable
@@ -65,19 +64,9 @@ fun ExposedRefreshTokenPersistence(db: Database, config: RefreshTokenPersistence
             Token.Refresh(id.value.toString())
         }
 
-        override suspend fun select(token: Token.Refresh): Option<RefreshToken> = ioTransaction(db = db) {
-            token.toUUIDOrNone()
-                .flatMap { id ->
-                    selectJoiningWithUsers()
-                        .where { RefreshTokensTable.id eq id }
-                        .singleOrNone()
-                        .map { it.convert(ResultRowToRefreshTokenConversion) }
-                }
-        }
-
         override suspend fun revoke(token: Token.Refresh): Either<DomainError, RefreshToken> = either {
             ioTransaction(db = db) {
-                val id = token.toUUIDOrNone().getOrRaise { InvalidRefreshToken }
+                val id = token.value.toUUIDOrNone().getOrRaise { InvalidRefreshToken }
 
                 val refreshToken = selectJoiningWithUsers()
                         .where { RefreshTokensTable.id eq id }
@@ -116,7 +105,7 @@ fun ExposedRefreshTokenPersistence(db: Database, config: RefreshTokenPersistence
 
         override suspend fun prolong(token: Token.Refresh): Either<DomainError, Token.Refresh> = either {
             ioTransaction(db = db) {
-                val id = token.toUUIDOrNone().getOrRaise { InvalidRefreshToken }
+                val id = token.value.toUUIDOrNone().getOrRaise { InvalidRefreshToken }
 
                 val (status, expiresAt) = RefreshTokensTable
                     .select(

@@ -21,7 +21,7 @@ fun Application.MailingModule() =
 
             val props = Properties().also {
                 it["mail.smtp.auth"] = smtp.property("auth").getString().toBoolean()
-                it["mail.smtp.starttls.enable"] = smtp.property("start-tls").getString().toBoolean()
+                it["mail.smtp.starttls.enable"] = smtp.property("startTls").getString().toBoolean()
                 it["mail.smtp.host"] = smtp.property("host").getString()
                 it["mail.smtp.port"] = smtp.property("port").getString()
                 it["mail.smtp.ssl.trust"] = smtp.property("ssl.trust").getString()
@@ -50,8 +50,8 @@ fun Application.MailingModule() =
                     name = Name(senders.property("auth.name").getString())
                 ),
                 noReply = Participant(
-                    address = Address(senders.property("no-reply.address").getString()),
-                    name = Name(senders.property("no-reply.name").getString())
+                    address = Address(senders.property("noReply.address").getString()),
+                    name = Name(senders.property("noReply.name").getString())
                 ),
             )
         }

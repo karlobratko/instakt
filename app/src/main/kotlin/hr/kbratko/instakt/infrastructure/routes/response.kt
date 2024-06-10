@@ -114,6 +114,7 @@ fun <Error> Nel<Error>.toFailure(onErrorConversionScope: ConversionScope<Nel<Err
 fun <Error> Nel<Error>.toFailure(onErrorMapper: (Nel<Error>) -> HttpStatusCode) =
     Response.Failure(map { it.toString() }, onErrorMapper.invoke(this))
 
+@JvmName("eitherToResponse")
 fun <A> Either<DomainError, A>.toResponse(
     onSuccessStatusCode: HttpStatusCode
 ) = toEitherNel().toResponse(NelErrorToHttpStatusCodeConversion, onSuccessStatusCode)
@@ -125,6 +126,7 @@ fun <A> Either<DomainError, A>.toResponse(
  * @param onSuccessStatusCode The HttpStatusCode to use if the Either is a Right.
  * @return A Response object.
  */
+@JvmName("eitherNelToResponse")
 fun <A> EitherNel<DomainError, A>.toResponse(
     onSuccessStatusCode: HttpStatusCode
 ) = toResponse(NelErrorToHttpStatusCodeConversion, onSuccessStatusCode)

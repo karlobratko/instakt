@@ -35,6 +35,8 @@ data class Access(val parent: Auth = Auth()) {
     data class Revoke(val parent: Access = Access()) {
         @Serializable data class Body(val refreshToken: String)
     }
+
+    @Serializable data class Response(val accessToken: Token.Access, val refreshToken: Token.Refresh)
 }
 
 fun Route.access() {
@@ -49,7 +51,7 @@ fun Route.access() {
 
                 val (refreshToken, accessToken) = jwtTokenService.generate(SecurityContext(user.id, user.role)).bind()
 
-                GrantAccess(accessToken, refreshToken)
+                Access.Response(accessToken, refreshToken)
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
         }
 
@@ -58,7 +60,7 @@ fun Route.access() {
                 val (refreshToken, accessToken) = jwtTokenService.refresh(Token.Refresh(body.refreshToken))
                     .bind()
 
-                GrantAccess(accessToken, refreshToken)
+                Access.Response(accessToken, refreshToken)
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
         }
 
@@ -69,5 +71,3 @@ fun Route.access() {
         }
     }
 }
-
-@Serializable data class GrantAccess(val accessToken: Token.Access, val refreshToken: Token.Refresh)

@@ -15,11 +15,14 @@ import arrow.core.raise.fold
 import arrow.core.right
 import arrow.core.toNonEmptyListOrNone
 import arrow.core.toOption
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.experimental.ExperimentalTypeInference
 import kotlin.contracts.InvocationKind.AT_MOST_ONCE as AtMostOnce
+
+fun OffsetDateTime?.toKotlinInstantOrNone() = toOption().map { it.toKotlinInstant() }
 
 fun String.toUUIDOrNone(): Option<UUID> = catch { UUID.fromString(this) }
 
