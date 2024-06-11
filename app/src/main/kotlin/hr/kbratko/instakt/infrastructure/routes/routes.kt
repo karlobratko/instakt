@@ -1,9 +1,7 @@
 package hr.kbratko.instakt.infrastructure.routes
 
-import hr.kbratko.instakt.infrastructure.routes.account.passwordReset
-import hr.kbratko.instakt.infrastructure.routes.account.profile
-import hr.kbratko.instakt.infrastructure.routes.auth.access
-import hr.kbratko.instakt.infrastructure.routes.auth.register
+import hr.kbratko.instakt.infrastructure.routes.account.account
+import hr.kbratko.instakt.infrastructure.routes.auth.auth
 import io.ktor.resources.Resource
 import io.ktor.server.application.Application
 import io.ktor.server.routing.routing
@@ -21,9 +19,7 @@ fun Application.configureRoutes() {
 
         validation()
 
-        register()
-        access()
-        profile()
-        passwordReset()
+        auth()
+        account()
     }
 }

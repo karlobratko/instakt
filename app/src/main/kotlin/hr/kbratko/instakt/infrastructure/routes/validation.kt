@@ -2,7 +2,7 @@ package hr.kbratko.instakt.infrastructure.routes
 
 import arrow.core.EitherNel
 import hr.kbratko.instakt.domain.ValidationError
-import hr.kbratko.instakt.domain.ValidationError.UserValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
+import hr.kbratko.instakt.domain.ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.RoleValidationError.InvalidUserRole
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.validation.BioIsValid
@@ -10,12 +10,16 @@ import hr.kbratko.instakt.domain.validation.EmailIsValid
 import hr.kbratko.instakt.domain.validation.FirstNameIsValid
 import hr.kbratko.instakt.domain.validation.LastNameIsValid
 import hr.kbratko.instakt.domain.validation.PasswordIsValid
+import hr.kbratko.instakt.domain.validation.PlatformIsValid
 import hr.kbratko.instakt.domain.validation.StringIsEnumValidation
 import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
+import hr.kbratko.instakt.domain.validation.UrlIsValid
 import hr.kbratko.instakt.domain.validation.UsernameIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.routes.account.PasswordReset
-import hr.kbratko.instakt.infrastructure.routes.account.Profile
+import hr.kbratko.instakt.infrastructure.routes.account.profile.Password
+import hr.kbratko.instakt.infrastructure.routes.account.profile.Profile
+import hr.kbratko.instakt.infrastructure.routes.account.profile.Social
 import hr.kbratko.instakt.infrastructure.routes.auth.Access
 import hr.kbratko.instakt.infrastructure.routes.auth.Register
 import io.ktor.server.application.install
@@ -26,6 +30,7 @@ import io.ktor.server.routing.Routing
 
 private const val URL_PATTERN =
     "^(https?)://(localhost|(([a-zA-Z0-9.-]+)\\.([a-zA-Z]{2,}))|((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]))(:[0-9]+)?(/[a-zA-Z0-9.-]*)*/?$"
+
 
 private fun <T> EitherNel<ValidationError, T>.foldValidation() = fold(
     ifLeft = { errors -> Invalid(errors.map { it.toString() }) },
@@ -72,7 +77,7 @@ fun Routing.validation() {
             }.foldValidation()
         }
 
-        validate<Profile.Password.Body> { request ->
+        validate<Password.Body> { request ->
             validate(request) {
                 with { it.oldPassword.validate(PasswordIsValid) }
                 with { it.newPassword.validate(PasswordIsValid) }
@@ -89,6 +94,20 @@ fun Routing.validation() {
         validate<PasswordReset.Body> { request ->
             validate(request) {
                 with { it.newPassword.validate(PasswordIsValid) }
+            }.foldValidation()
+        }
+
+        validate<Social.Body> { request ->
+            validate(request) {
+                with { it.platform.validate(PlatformIsValid) }
+                with { it.url.validate(UrlIsValid) }
+            }.foldValidation()
+        }
+
+        validate<Social.Id.Body> { request ->
+            validate(request) {
+                with { it.platform.validate(PlatformIsValid) }
+                with { it.url.validate(UrlIsValid) }
             }.foldValidation()
         }
     }

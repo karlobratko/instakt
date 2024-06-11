@@ -73,7 +73,6 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         UnhandledServerError -> InternalServerError
         EndpointRequestLimitMet -> TooManyRequests
         ValidationError.UserValidationError.RoleValidationError.AdminCanNotBeCreated -> BadRequest
-        ValidationError.UserValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern -> BadRequest
         ValidationError.UserValidationError.RoleValidationError.InvalidUserRole -> BadRequest
         ValidationError.UserValidationError.FirstNameValidationError.TooLongFirstName -> BadRequest
         ValidationError.UserValidationError.FirstNameValidationError.TooShortFirstName -> BadRequest
@@ -83,5 +82,12 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         DbError.InvalidPassword -> BadRequest
         DbError.PasswordResetTokenStillValid -> BadRequest
         DbError.UnknownPasswordResetToken -> NotFound
+        DbError.SocialMediaLinkForPlatformAlreadyExists -> BadRequest
+        DbError.SocialMediaLinkNotFound -> NotFound
+        ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern -> BadRequest
+        ValidationError.SocialMediaLinkValidationError.PlatformValidationError.TooLongPlatformName -> BadRequest
+        ValidationError.SocialMediaLinkValidationError.PlatformValidationError.TooShortPlatformName -> BadRequest
+        ValidationError.SocialMediaLinkValidationError.UrlValidationError.InvalidUrlPattern -> BadRequest
+        ValidationError.SocialMediaLinkValidationError.UrlValidationError.TooLongUrl -> BadRequest
     }
 }

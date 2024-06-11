@@ -25,6 +25,11 @@ import org.koin.ktor.ext.inject
 
 @Resource("/password-reset")
 data class PasswordReset(val parent: Account = Account()) {
+    @Serializable data class Body(
+        val token: String,
+        val newPassword: String
+    )
+
     @Resource("/acquire")
     data class Acquire(val parent: PasswordReset = PasswordReset()) {
         @Serializable data class Body(
@@ -32,11 +37,6 @@ data class PasswordReset(val parent: Account = Account()) {
             val email: String
         )
     }
-
-    @Serializable data class Body(
-        val token: String,
-        val newPassword: String
-    )
 }
 
 fun Route.passwordReset() {

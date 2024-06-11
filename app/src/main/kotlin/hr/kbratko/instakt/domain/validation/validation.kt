@@ -94,6 +94,13 @@ fun <Error> StringAllSatisfiesPredicateValidation(predicate: (Char) -> Boolean, 
         }
     }
 
+fun <Error> StringSatisfiesPredicateValidation(predicate: (String) -> Boolean, error: () -> Error) =
+    StringValidationScope {
+        applyWrapEitherNel {
+            ensure(predicate(this@StringValidationScope), error)
+        }
+    }
+
 fun <Error> StringIsUUIDValidation(error: () -> Error) = StringValidationScope {
     this.toUUIDOrNone().map { this }.toEitherNel { error() }
 }

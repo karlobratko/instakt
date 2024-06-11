@@ -49,6 +49,10 @@ sealed interface DbError : DomainError {
     data object PasswordResetTokenStillValid : DbError
 
     data object UnknownPasswordResetToken : DbError
+
+    data object SocialMediaLinkForPlatformAlreadyExists : DbError
+
+    data object SocialMediaLinkNotFound : DbError
 }
 
 sealed interface SecurityError : DomainError {
@@ -114,9 +118,23 @@ sealed interface ValidationError : DomainError {
 
             data object AdminCanNotBeCreated : RoleValidationError
         }
+    }
 
-        sealed interface RedirectUrlValidationError : UserValidationError {
-            data object InvalidRedirectUrlPattern : RedirectUrlValidationError
+    sealed interface RedirectUrlValidationError : ValidationError {
+        data object InvalidRedirectUrlPattern : RedirectUrlValidationError
+    }
+
+    sealed interface SocialMediaLinkValidationError : ValidationError {
+        sealed interface UrlValidationError : SocialMediaLinkValidationError {
+            data object TooLongUrl : UrlValidationError
+
+            data object InvalidUrlPattern : UrlValidationError
+        }
+
+        sealed interface PlatformValidationError : SocialMediaLinkValidationError {
+            data object TooShortPlatformName : PlatformValidationError
+
+            data object TooLongPlatformName : PlatformValidationError
         }
     }
 }

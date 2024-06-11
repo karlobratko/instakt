@@ -6,6 +6,7 @@ import hr.kbratko.instakt.domain.toDuration
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedPasswordResetTokenPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedRefreshTokenPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedRegistrationTokenPersistence
+import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedSocialMediaLinkPersistencePersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedUserPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.PasswordResetTokenPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.exposed.RefreshTokenPersistenceConfig
@@ -78,4 +79,6 @@ fun Application.PersistenceModule() =
         single { ExposedRefreshTokenPersistence(get(), get()) }
 
         single { ExposedPasswordResetTokenPersistence(get(), get()) }
+
+        single { ExposedSocialMediaLinkPersistencePersistence(get()) }
     }
