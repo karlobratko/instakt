@@ -17,7 +17,7 @@ POST http://localhost:8080/api/v1/auth/register/confirm
 Content-Type: application/json
 
 {
-  "token": "6168c272-b510-4d44-b3d2-50a2ad934b77"
+  "token": "1aada623-008d-4f49-8b45-6874b5222c5f"
 }
 
 ###
@@ -26,7 +26,7 @@ Content-Type: application/json
 
 {
   "type": "token",
-  "token": "6168c272-b510-4d44-b3d2-50a2ad934b77",
+  "token": "1aada623-008d-4f49-8b45-6874b5222c5f",
   "redirectUrl": "http://localhost:3000/confirm-registration"
 }
 

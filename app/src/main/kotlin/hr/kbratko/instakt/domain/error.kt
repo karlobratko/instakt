@@ -11,11 +11,7 @@ data object UnhandledServerError : DomainError
 data object EndpointRequestLimitMet : DomainError
 
 sealed interface RequestError : DomainError {
-    data object RequestBodyCouldNotBeParsed : RequestError
-
-    data object InvalidRequestPathParameter : RequestError
-
-    data object InvalidRequestQueryParameter : RequestError
+    data object RequestCouldNotBeProcessed : RequestError
 }
 
 sealed interface DbError : DomainError {

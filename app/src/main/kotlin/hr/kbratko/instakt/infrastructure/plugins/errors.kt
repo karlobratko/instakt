@@ -3,7 +3,7 @@ package hr.kbratko.instakt.infrastructure.plugins
 import arrow.core.nel
 import arrow.core.toNonEmptyListOrNull
 import hr.kbratko.instakt.domain.EndpointRequestLimitMet
-import hr.kbratko.instakt.domain.RequestError.RequestBodyCouldNotBeParsed
+import hr.kbratko.instakt.domain.RequestError.RequestCouldNotBeProcessed
 import hr.kbratko.instakt.domain.UnhandledServerError
 import hr.kbratko.instakt.infrastructure.routes.Response.Failure
 import hr.kbratko.instakt.infrastructure.routes.toFailure
@@ -29,7 +29,7 @@ fun Application.configureErrorHandling() {
         }
 
         exception<BadRequestException> { call, _ ->
-            val failure = RequestBodyCouldNotBeParsed.nel().toFailure()
+            val failure = RequestCouldNotBeProcessed.nel().toFailure()
             call.respond(failure.code, failure)
         }
 
@@ -39,8 +39,8 @@ fun Application.configureErrorHandling() {
         }
 
         exception<ContentTransformationException> { call, _ ->
-            val failure = RequestBodyCouldNotBeParsed.nel().toFailure()
-            call.respond(failure.code, RequestBodyCouldNotBeParsed.nel().toFailure())
+            val failure = RequestCouldNotBeProcessed.nel().toFailure()
+            call.respond(failure.code, RequestCouldNotBeProcessed.nel().toFailure())
         }
 
         exception<AuthenticationException> { call, cause ->

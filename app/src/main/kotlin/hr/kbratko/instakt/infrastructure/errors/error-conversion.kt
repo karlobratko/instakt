@@ -67,9 +67,7 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.UserValidationError.UsernameValidationError.NonAlphanumericCharacterInUsername -> BadRequest
         ValidationError.UserValidationError.UsernameValidationError.TooLongUsername -> BadRequest
         ValidationError.UserValidationError.UsernameValidationError.TooShortUsername -> BadRequest
-        RequestError.InvalidRequestPathParameter -> BadRequest
-        RequestError.InvalidRequestQueryParameter -> BadRequest
-        RequestError.RequestBodyCouldNotBeParsed -> BadRequest
+        RequestError.RequestCouldNotBeProcessed -> BadRequest
         UnhandledServerError -> InternalServerError
         EndpointRequestLimitMet -> TooManyRequests
         ValidationError.UserValidationError.RoleValidationError.AdminCanNotBeCreated -> BadRequest

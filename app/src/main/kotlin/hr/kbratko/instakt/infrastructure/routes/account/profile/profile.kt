@@ -29,6 +29,7 @@ data class Profile(val parent: Account = Account()) {
         val bio: String
     )
 
+    // TODO: implement fetching and update of profile picture in separate file
     @Resource("/picture")
     data class Picture(val parent: Profile = Profile())
 }
