@@ -5,7 +5,8 @@ build/
 !**/src/test/**/build/
 
 ### Secrets ###
-**/src/main/resources/secrets
+**/src/main/resources/secrets/*
+!**/src/main/resources/secrets/*.dev.conf
 
 ### STS ###
 .apt_generated
