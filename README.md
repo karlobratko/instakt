@@ -83,7 +83,7 @@ podman volume prune -f
 Or use the Makefile:
 
 ```sh
-make cleanup
+make clean
 ```
 
 ## Usage
