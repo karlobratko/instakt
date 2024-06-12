@@ -14,8 +14,6 @@ import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
-import hr.kbratko.instakt.domain.validation.RoleIsNotAdmin
-import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.mailing.Senders
 import hr.kbratko.instakt.infrastructure.mailing.templates.ConfirmRegistration
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -39,7 +37,6 @@ data class Register(val parent: Auth = Auth()) {
         val firstName: String,
         val lastName: String,
         val password: String,
-        val role: String,
         val redirectUrl: String
     )
 
@@ -94,7 +91,7 @@ fun Route.register() {
                         User.FirstName(body.firstName),
                         User.LastName(body.lastName),
                         User.Password(body.password),
-                        User.Role.valueOf(body.role).validate(RoleIsNotAdmin).bind()
+                        User.Role.Regular
                     )
                 ).toEitherNel().bind()
 

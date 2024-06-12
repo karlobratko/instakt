@@ -3,8 +3,6 @@ package hr.kbratko.instakt.infrastructure.routes
 import arrow.core.EitherNel
 import hr.kbratko.instakt.domain.ValidationError
 import hr.kbratko.instakt.domain.ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
-import hr.kbratko.instakt.domain.ValidationError.UserValidationError.RoleValidationError.InvalidUserRole
-import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.validation.BioIsValid
 import hr.kbratko.instakt.domain.validation.ContentDescriptionIsValid
 import hr.kbratko.instakt.domain.validation.ContentTagsAreValid
@@ -13,16 +11,15 @@ import hr.kbratko.instakt.domain.validation.FirstNameIsValid
 import hr.kbratko.instakt.domain.validation.LastNameIsValid
 import hr.kbratko.instakt.domain.validation.PasswordIsValid
 import hr.kbratko.instakt.domain.validation.PlatformIsValid
-import hr.kbratko.instakt.domain.validation.StringIsEnumValidation
 import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
 import hr.kbratko.instakt.domain.validation.UrlIsValid
 import hr.kbratko.instakt.domain.validation.UsernameIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.routes.account.PasswordReset
-import hr.kbratko.instakt.infrastructure.routes.account.profile.images.Images
 import hr.kbratko.instakt.infrastructure.routes.account.profile.Password
-import hr.kbratko.instakt.infrastructure.routes.account.profile.UserProfile
 import hr.kbratko.instakt.infrastructure.routes.account.profile.Social
+import hr.kbratko.instakt.infrastructure.routes.account.profile.UserProfile
+import hr.kbratko.instakt.infrastructure.routes.account.profile.images.Images
 import hr.kbratko.instakt.infrastructure.routes.auth.Access
 import hr.kbratko.instakt.infrastructure.routes.auth.Register
 import io.ktor.server.application.install
@@ -49,7 +46,6 @@ fun Routing.validation() {
                 with { it.firstName.validate(FirstNameIsValid) }
                 with { it.lastName.validate(LastNameIsValid) }
                 with { it.password.validate(PasswordIsValid) }
-                with { it.role.validate(StringIsEnumValidation<InvalidUserRole, User.Role> { InvalidUserRole }) }
                 with { it.redirectUrl.validate(StringMatchingPatternValidation(URL_PATTERN.toRegex()) { InvalidRedirectUrlPattern }) }
             }.foldValidation()
         }
