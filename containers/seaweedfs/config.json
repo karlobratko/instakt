@@ -1,0 +1,28 @@
+{
+  "identities": [
+    {
+      "name": "anonymous",
+      "actions": [
+        "Read"
+      ]
+    },
+    {
+      "name": "instakt",
+      "credentials": [
+        {
+          "accessKey": "d6qs1v8tkk2tdgb9wwclcgsqw398np0x",
+          "secretKey": "sfojoblw1h9r84jxagrwc89i3s6zbzig"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "ReadAcp",
+        "List",
+        "Tagging",
+        "Write",
+        "WriteAcp"
+      ]
+    }
+  ]
+}

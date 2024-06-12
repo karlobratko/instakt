@@ -59,6 +59,9 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.bundles.koin)
 
+    implementation(libs.s3)
+    implementation(libs.tika)
+
     testImplementation(libs.test.ktor.server)
     testImplementation(libs.test.kotlinx.coroutines)
     testImplementation(libs.bundles.test.kotest.core)

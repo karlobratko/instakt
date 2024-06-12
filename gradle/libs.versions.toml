@@ -23,6 +23,8 @@ kotest-ktor = "2.0.0"
 kotest-arrow = "1.4.0"
 kotest-datetime = "2.0.0"
 mockk = "1.13.10"
+s3 = "1.0.0"
+tika = "2.9.1"
 
 [libraries]
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -101,6 +103,9 @@ koin-core = { module = "io.insert-koin:koin-core" }
 koin-coroutines = { module = "io.insert-koin:koin-core-coroutines" }
 koin-ktor = { module = "io.insert-koin:koin-ktor" }
 koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j" }
+
+s3 = { module = "aws.sdk.kotlin:s3", version.ref = "s3" }
+tika = { module = "org.apache.tika:tika-core", version.ref = "tika" }
 
 test-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter-engine" }
 

@@ -1,20 +1,10 @@
 ###
-GET http://localhost:8080/api/v1/account/profile/social
+GET http://localhost:8080/api/v1/account/user/social
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
 ###
-POST http://localhost:8080/api/v1/account/profile/social
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
-
-{
-  "platform": "LinkedIn",
-  "url": "https://www.linkedin.com/in/karlo-bratko/"
-}
-
-###
-PUT http://localhost:8080/api/v1/account/profile/social/1
+POST http://localhost:8080/api/v1/account/user/social
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -24,6 +14,16 @@ Authorization: Bearer {{access_token}}
 }
 
 ###
-DELETE http://localhost:8080/api/v1/account/profile/social/1
+PUT http://localhost:8080/api/v1/account/user/social/1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "platform": "LinkedIn",
+  "url": "https://www.linkedin.com/in/karlo-bratko/"
+}
+
+###
+DELETE http://localhost:8080/api/v1/account/user/social/1
 Content-Type: application/json
 Authorization: Bearer {{access_token}}

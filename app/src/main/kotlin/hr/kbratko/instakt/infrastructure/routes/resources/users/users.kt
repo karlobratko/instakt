@@ -1,11 +1,11 @@
-package hr.kbratko.instakt.infrastructure.routes.content.users
+package hr.kbratko.instakt.infrastructure.routes.resources.users
 
 import arrow.core.raise.either
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
-import hr.kbratko.instakt.infrastructure.routes.content.Content
+import hr.kbratko.instakt.infrastructure.routes.resources.Resources
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
@@ -16,12 +16,13 @@ import io.ktor.server.routing.Route
 import org.koin.ktor.ext.inject
 
 @Resource("/users/{id}")
-data class Users(val parent: Content = Content(), val id: Long)
+data class Users(val parent: Resources = Resources(), val id: Long)
 
 fun Route.users() {
     val userPersistence by inject<UserPersistence>()
 
     social()
+    images()
 
     permissiveRateLimit {
         get<Users> { resource ->

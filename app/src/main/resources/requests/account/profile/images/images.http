@@ -1,0 +1,36 @@
+###
+GET http://localhost:8080/api/v1/account/user/images
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+###
+POST http://localhost:8080/api/v1/account/user/images
+Content-Type: multipart/form-data; boundary=Boundary
+Authorization: Bearer {{access_token}}
+
+--Boundary
+Content-Disposition: form-data; name="content"; filename="test.png"
+Content-Type: image/png
+
+< ./test.png
+--Boundary
+Content-Disposition: form-data; name="metadata"
+Content-Type: application/json
+
+{"description": "This is image description.", "tags": ["tag1","tag2","tag3"]}
+--Boundary--
+
+###
+PUT http://localhost:8080/api/v1/account/user/images/f7a4bbdc-bd30-4794-8194-3d5f1a05bbe1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "description": "This is image description.",
+  "tags": ["tag1","tag2","tag3","tag4"]
+}
+
+###
+DELETE http://localhost:8080/api/v1/account/user/images/f7a4bbdc-bd30-4794-8194-3d5f1a05bbe1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}

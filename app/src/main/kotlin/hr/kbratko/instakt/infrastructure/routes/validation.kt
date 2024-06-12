@@ -6,6 +6,8 @@ import hr.kbratko.instakt.domain.ValidationError.RedirectUrlValidationError.Inva
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.RoleValidationError.InvalidUserRole
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.validation.BioIsValid
+import hr.kbratko.instakt.domain.validation.ContentDescriptionIsValid
+import hr.kbratko.instakt.domain.validation.ContentTagsAreValid
 import hr.kbratko.instakt.domain.validation.EmailIsValid
 import hr.kbratko.instakt.domain.validation.FirstNameIsValid
 import hr.kbratko.instakt.domain.validation.LastNameIsValid
@@ -17,8 +19,9 @@ import hr.kbratko.instakt.domain.validation.UrlIsValid
 import hr.kbratko.instakt.domain.validation.UsernameIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.routes.account.PasswordReset
+import hr.kbratko.instakt.infrastructure.routes.account.profile.images.Images
 import hr.kbratko.instakt.infrastructure.routes.account.profile.Password
-import hr.kbratko.instakt.infrastructure.routes.account.profile.Profile
+import hr.kbratko.instakt.infrastructure.routes.account.profile.UserProfile
 import hr.kbratko.instakt.infrastructure.routes.account.profile.Social
 import hr.kbratko.instakt.infrastructure.routes.auth.Access
 import hr.kbratko.instakt.infrastructure.routes.auth.Register
@@ -69,11 +72,25 @@ fun Routing.validation() {
             }.foldValidation()
         }
 
-        validate<Profile.Body> { request ->
+        validate<UserProfile.Body> { request ->
             validate(request) {
                 with { it.firstName.validate(FirstNameIsValid) }
                 with { it.lastName.validate(LastNameIsValid) }
                 with { it.bio.validate(BioIsValid) }
+            }.foldValidation()
+        }
+
+        validate<Images.Body> { request ->
+            validate(request) {
+                with { it.description.validate(ContentDescriptionIsValid) }
+                with { it.tags.validate(ContentTagsAreValid) }
+            }.foldValidation()
+        }
+
+        validate<Images.Id.Body> { request ->
+            validate(request) {
+                with { it.description.validate(ContentDescriptionIsValid) }
+                with { it.tags.validate(ContentTagsAreValid) }
             }.foldValidation()
         }
 

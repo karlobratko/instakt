@@ -23,10 +23,10 @@ data class User(
         val firstName: FirstName,
         val lastName: LastName,
         val bio: Bio,
-        val photoId: Option<Image.Id>
+        val photoId: Option<ContentMetadata.Id>
     )
 
-    data class New(
+    class New(
         val username: Username,
         val email: Email,
         val firstName: FirstName,
@@ -35,20 +35,20 @@ data class User(
         val role: Role
     )
 
-    data class Edit(
+    class Edit(
         val id: Id,
         val firstName: FirstName,
         val lastName: LastName,
         val bio: Bio
     )
 
-    data class ChangePassword(
+    class ChangePassword(
         val id: Id,
         val oldPassword: Password,
         val newPassword: Password
     )
 
-    data class ResetPassword(
+    class ResetPassword(
         val id: Id,
         val newPassword: Password
     )

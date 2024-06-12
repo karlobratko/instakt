@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
 @Resource("/password")
-data class Password(val parent: Profile = Profile()) {
+data class Password(val parent: UserProfile = UserProfile()) {
     @Serializable data class Body(
         val oldPassword: String,
         val newPassword: String

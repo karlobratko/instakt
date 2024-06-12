@@ -1,5 +1,6 @@
 package hr.kbratko.instakt.infrastructure.plugins
 
+import hr.kbratko.instakt.infrastructure.content.ContentModule
 import hr.kbratko.instakt.infrastructure.mailing.MailingModule
 import hr.kbratko.instakt.infrastructure.persistence.PersistenceModule
 import hr.kbratko.instakt.infrastructure.security.SecurityModule
@@ -13,7 +14,8 @@ fun Application.configureDi() {
         modules(
             MailingModule(),
             PersistenceModule(),
-            SecurityModule()
+            SecurityModule(),
+            ContentModule()
         )
     }
 }

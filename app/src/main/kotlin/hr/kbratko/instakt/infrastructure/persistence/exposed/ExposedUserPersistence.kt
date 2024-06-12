@@ -21,7 +21,7 @@ import hr.kbratko.instakt.domain.DbError.UsernameAlreadyExists
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.conversion.convert
 import hr.kbratko.instakt.domain.getOrRaise
-import hr.kbratko.instakt.domain.model.Image
+import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
@@ -54,7 +54,7 @@ object UsersTable : LongIdTable("users", "user_pk") {
     val firstName = varchar("first_name", 50)
     val lastName = varchar("last_name", 50)
     val bio = varchar("bio", 1024).default("")
-    val profilePictureId = reference("profile_picture_fk", ImagesTable).nullable()
+    val profilePictureId = reference("profile_picture_fk", ContentMetadataTable).nullable()
     val passwordHash = encryptedVarchar(
         "password_hash",
         256,
@@ -78,7 +78,7 @@ object UsersTable : LongIdTable("users", "user_pk") {
             User.FirstName(this[firstName]),
             User.LastName(this[lastName]),
             User.Bio(this[bio]),
-            this[profilePictureId].toOption().map { Image.Id(it.value.toString()) }
+            this[profilePictureId].toOption().map { ContentMetadata.Id(it.value.toString()) }
         )
     }
 }

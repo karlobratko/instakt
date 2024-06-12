@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
 @Resource("/social")
-data class Social(val parent: Profile = Profile()) {
+data class Social(val parent: UserProfile = UserProfile()) {
     @Serializable data class Body(
         val platform: String,
         val url: String
@@ -71,9 +71,11 @@ fun Route.social() {
 
             put<Social.Id, Social.Id.Body> { resource, body ->
                 either {
+                    val principal = call.principal<UserPrincipal>()
                     socialMediaLinkPersistence.update(
                         SocialMediaLink.Edit(
                             SocialMediaLink.Id(resource.id),
+                            principal.id,
                             SocialMediaLink.Platform(body.platform),
                             SocialMediaLink.Url(body.url)
                         )
@@ -83,8 +85,12 @@ fun Route.social() {
 
             delete<Social.Id> { resource ->
                 either {
+                    val principal = call.principal<UserPrincipal>()
                     socialMediaLinkPersistence.delete(
-                        SocialMediaLink.Id(resource.id)
+                        SocialMediaLink.Delete(
+                            SocialMediaLink.Id(resource.id),
+                            principal.id
+                        )
                     ).bind()
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }

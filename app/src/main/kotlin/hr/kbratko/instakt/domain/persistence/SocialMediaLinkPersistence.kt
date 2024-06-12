@@ -12,5 +12,5 @@ interface SocialMediaLinkPersistence {
 
     suspend fun update(data: SocialMediaLink.Edit): Either<DomainError, SocialMediaLink>
 
-    suspend fun delete(id: SocialMediaLink.Id): Either<DomainError, SocialMediaLink.Id>
+    suspend fun delete(data: SocialMediaLink.Delete): Either<DomainError, SocialMediaLink.Id>
 }

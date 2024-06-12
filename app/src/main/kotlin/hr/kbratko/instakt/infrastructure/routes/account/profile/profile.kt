@@ -9,6 +9,7 @@ import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.account.Account
+import hr.kbratko.instakt.infrastructure.routes.account.profile.images.images
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import hr.kbratko.instakt.infrastructure.security.UserPrincipal
 import io.ktor.http.HttpStatusCode
@@ -21,17 +22,13 @@ import io.ktor.server.routing.Route
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
-@Resource("/profile")
-data class Profile(val parent: Account = Account()) {
+@Resource("/user")
+data class UserProfile(val parent: Account = Account()) {
     @Serializable data class Body(
         val firstName: String,
         val lastName: String,
         val bio: String
     )
-
-    // TODO: implement fetching and update of profile picture in separate file
-    @Resource("/picture")
-    data class Picture(val parent: Profile = Profile())
 }
 
 fun Route.profile() {
@@ -39,10 +36,11 @@ fun Route.profile() {
 
     social()
     password()
+    images()
 
     permissiveRateLimit {
         jwt {
-            get<Profile> {
+            get<UserProfile> {
                 either {
                     val principal = call.principal<UserPrincipal>()
                     userPersistence.selectProfile(principal.id).toEither { UserNotFound }.bind()
@@ -53,7 +51,7 @@ fun Route.profile() {
 
     restrictedRateLimit {
         jwt {
-            put<Profile, Profile.Body> { _, body ->
+            put<UserProfile, UserProfile.Body> { _, body ->
                 either {
                     val principal = call.principal<UserPrincipal>()
 

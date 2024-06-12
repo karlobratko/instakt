@@ -13,23 +13,20 @@ CREATE TABLE users
     CONSTRAINT users_email_unique_index UNIQUE (email)
 );
 
-CREATE TABLE images
+CREATE TABLE content_metadata
 (
-    image_pk     UUID PRIMARY KEY,
-    user_fk      BIGINT                   NOT NULL,
-    bucket       UUID                     NOT NULL,
-    key          VARCHAR(256)             NOT NULL,
-    content_type SMALLINT                 NOT NULL,
-    description  VARCHAR(1024)            NOT NULL,
-    upload_time  TIMESTAMP WITH TIME ZONE NOT NULL,
-    CONSTRAINT images_bucket_key_unique_index UNIQUE (bucket, key)
+    content_metadata_pk UUID PRIMARY KEY,
+    user_fk             BIGINT                   NOT NULL,
+    path                VARCHAR(256)             NOT NULL,
+    description         VARCHAR(1024)            NOT NULL,
+    uploaded_at         TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE tags
 (
-    tag_pk   BIGSERIAL PRIMARY KEY,
-    name     VARCHAR(50) NOT NULL,
-    image_fk UUID        NOT NULL
+    tag_pk              BIGSERIAL PRIMARY KEY,
+    name                VARCHAR(50) NOT NULL,
+    content_metadata_fk UUID        NOT NULL
 );
 
 CREATE TABLE social_media_links
@@ -68,13 +65,13 @@ CREATE TABLE password_reset_tokens
 );
 
 ALTER TABLE users
-    ADD FOREIGN KEY (profile_picture_fk) REFERENCES images (image_pk);
+    ADD FOREIGN KEY (profile_picture_fk) REFERENCES content_metadata (content_metadata_pk);
 
-ALTER TABLE images
+ALTER TABLE content_metadata
     ADD FOREIGN KEY (user_fk) REFERENCES users (user_pk) ON DELETE CASCADE;
 
 ALTER TABLE tags
-    ADD FOREIGN KEY (image_fk) REFERENCES images (image_pk) ON DELETE CASCADE;
+    ADD FOREIGN KEY (content_metadata_fk) REFERENCES content_metadata (content_metadata_pk) ON DELETE CASCADE;
 
 ALTER TABLE social_media_links
     ADD FOREIGN KEY (user_fk) REFERENCES users (user_pk) ON DELETE CASCADE;

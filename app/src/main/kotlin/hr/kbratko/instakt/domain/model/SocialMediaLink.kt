@@ -8,16 +8,22 @@ data class SocialMediaLink(
     val platform: Platform,
     val url: Url
 ) {
-    data class New(
+    class New(
         val userId: User.Id,
         val platform: Platform,
         val url: Url
     )
 
-    data class Edit(
+    class Edit(
         val id: Id,
+        val userId: User.Id,
         val platform: Platform,
         val url: Url
+    )
+
+    class Delete(
+        val id: Id,
+        val userId: User.Id,
     )
 
     @Serializable @JvmInline value class Id(val value: Long)

@@ -1,4 +1,4 @@
-package hr.kbratko.instakt.infrastructure.routes.content.users
+package hr.kbratko.instakt.infrastructure.routes.resources.users
 
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.SocialMediaLinkPersistence

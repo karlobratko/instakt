@@ -39,53 +39,72 @@ typealias ErrorToHttpStatusCodeConversionScope = ConversionScope<DomainError, Ht
 
 val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
     when (this) {
-        DbError.EmailAlreadyExists -> BadRequest
-        DbError.InvalidRefreshToken -> NotFound
-        DbError.UnknownRegistrationToken -> NotFound
-        DbError.InvalidUsernameOrPassword -> NotFound
-        DbError.RefreshTokenAlreadyRevoked -> BadRequest
-        DbError.RefreshTokenStillValid -> BadRequest
-        DbError.RegistrationTokenAlreadyConfirmed -> BadRequest
-        DbError.RegistrationTokenExpired -> BadRequest
-        DbError.RegistrationTokenNotConfirmed -> BadRequest
-        DbError.RegistrationTokenStillValid -> BadRequest
-        DbError.UserNotFound -> NotFound
-        DbError.UsernameAlreadyExists -> BadRequest
-        MailingError.CouldNotSendEmail -> InternalServerError
-        SecurityError.ClaimsExtractionError -> Unauthorized
-        SecurityError.TokenValidationError.MalformedSubject -> Unauthorized
-        SecurityError.TokenValidationError.TokenExpired -> Unauthorized
-        SecurityError.TokenGenerationFailed -> InternalServerError
+        // BadRequest
+        DbError.EmailAlreadyExists,
+        DbError.RefreshTokenAlreadyRevoked,
+        DbError.RefreshTokenStillValid,
+        DbError.RegistrationTokenAlreadyConfirmed,
+        DbError.RegistrationTokenExpired,
+        DbError.RegistrationTokenNotConfirmed,
+        DbError.RegistrationTokenStillValid,
+        DbError.UsernameAlreadyExists,
+        ValidationError.UserValidationError.EmailValidationError.InvalidEmail,
+        ValidationError.UserValidationError.EmailValidationError.TooLongEmail,
+        ValidationError.UserValidationError.PasswordValidationError.NoDigitsInPassword,
+        ValidationError.UserValidationError.PasswordValidationError.NoSpecialCharsInPassword,
+        ValidationError.UserValidationError.PasswordValidationError.NoUppercaseCharsInPassword,
+        ValidationError.UserValidationError.PasswordValidationError.TooShortPassword,
+        ValidationError.UserValidationError.PasswordValidationError.WhitespaceInPassword,
+        ValidationError.UserValidationError.UsernameValidationError.NonAlphanumericCharacterInUsername,
+        ValidationError.UserValidationError.UsernameValidationError.TooLongUsername,
+        ValidationError.UserValidationError.UsernameValidationError.TooShortUsername,
+        RequestError.RequestCouldNotBeProcessed,
+        ValidationError.UserValidationError.RoleValidationError.AdminCanNotBeCreated,
+        ValidationError.UserValidationError.RoleValidationError.InvalidUserRole,
+        ValidationError.UserValidationError.FirstNameValidationError.TooLongFirstName,
+        ValidationError.UserValidationError.FirstNameValidationError.TooShortFirstName,
+        ValidationError.UserValidationError.LastNameValidationError.TooLongLastName,
+        ValidationError.UserValidationError.LastNameValidationError.TooShortLastName,
+        ValidationError.UserValidationError.BioValidationError.TooLongBio,
+        DbError.InvalidPassword,
+        DbError.PasswordResetTokenStillValid,
+        DbError.SocialMediaLinkForPlatformAlreadyExists,
+        ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern,
+        ValidationError.SocialMediaLinkValidationError.PlatformValidationError.TooLongPlatformName,
+        ValidationError.SocialMediaLinkValidationError.PlatformValidationError.TooShortPlatformName,
+        ValidationError.SocialMediaLinkValidationError.UrlValidationError.InvalidUrlPattern,
+        ValidationError.SocialMediaLinkValidationError.UrlValidationError.TooLongUrl,
+        DbError.CouldNotDeleteContent,
+        DbError.CouldNotPersistContent,
+        DbError.UnsupportedContentType,
+        ValidationError.ContentValidationError.ContentDescriptionValidationError.TooLongContentDescription,
+        ValidationError.ContentValidationError.ContentTagsValidationError.TooLongContentTagName,
+        ValidationError.ContentValidationError.ContentTagsValidationError.TooShortContentTagName,
+        ValidationError.ContentValidationError.ContentSizeValidationError.MaxContentSizeExceeded -> BadRequest
+
+        // NotFound
+        DbError.InvalidRefreshToken,
+        DbError.UnknownRegistrationToken,
+        DbError.InvalidUsernameOrPassword,
+        DbError.UserNotFound,
+        DbError.UnknownPasswordResetToken,
+        DbError.SocialMediaLinkNotFound,
+        DbError.ContentMetadataNotFound,
+        DbError.ContentNotFound,
+        DbError.ProfilePictureMetadataNotFound -> NotFound
+
+        // Unauthorized
+        SecurityError.ClaimsExtractionError,
+        SecurityError.TokenValidationError.MalformedSubject,
+        SecurityError.TokenValidationError.TokenExpired,
         SecurityError.TokenValidationError.UnsupportedRoleClaim -> Unauthorized
-        ValidationError.UserValidationError.EmailValidationError.InvalidEmail -> BadRequest
-        ValidationError.UserValidationError.EmailValidationError.TooLongEmail -> BadRequest
-        ValidationError.UserValidationError.PasswordValidationError.NoDigitsInPassword -> BadRequest
-        ValidationError.UserValidationError.PasswordValidationError.NoSpecialCharsInPassword -> BadRequest
-        ValidationError.UserValidationError.PasswordValidationError.NoUppercaseCharsInPassword -> BadRequest
-        ValidationError.UserValidationError.PasswordValidationError.TooShortPassword -> BadRequest
-        ValidationError.UserValidationError.PasswordValidationError.WhitespaceInPassword -> BadRequest
-        ValidationError.UserValidationError.UsernameValidationError.NonAlphanumericCharacterInUsername -> BadRequest
-        ValidationError.UserValidationError.UsernameValidationError.TooLongUsername -> BadRequest
-        ValidationError.UserValidationError.UsernameValidationError.TooShortUsername -> BadRequest
-        RequestError.RequestCouldNotBeProcessed -> BadRequest
+
+        // InternalServerError
+        MailingError.CouldNotSendEmail,
+        SecurityError.TokenGenerationFailed,
         UnhandledServerError -> InternalServerError
+
+        // TooManyRequests
         EndpointRequestLimitMet -> TooManyRequests
-        ValidationError.UserValidationError.RoleValidationError.AdminCanNotBeCreated -> BadRequest
-        ValidationError.UserValidationError.RoleValidationError.InvalidUserRole -> BadRequest
-        ValidationError.UserValidationError.FirstNameValidationError.TooLongFirstName -> BadRequest
-        ValidationError.UserValidationError.FirstNameValidationError.TooShortFirstName -> BadRequest
-        ValidationError.UserValidationError.LastNameValidationError.TooLongLastName -> BadRequest
-        ValidationError.UserValidationError.LastNameValidationError.TooShortLastName -> BadRequest
-        ValidationError.UserValidationError.BioValidationError.TooLongBio -> BadRequest
-        DbError.InvalidPassword -> BadRequest
-        DbError.PasswordResetTokenStillValid -> BadRequest
-        DbError.UnknownPasswordResetToken -> NotFound
-        DbError.SocialMediaLinkForPlatformAlreadyExists -> BadRequest
-        DbError.SocialMediaLinkNotFound -> NotFound
-        ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern -> BadRequest
-        ValidationError.SocialMediaLinkValidationError.PlatformValidationError.TooLongPlatformName -> BadRequest
-        ValidationError.SocialMediaLinkValidationError.PlatformValidationError.TooShortPlatformName -> BadRequest
-        ValidationError.SocialMediaLinkValidationError.UrlValidationError.InvalidUrlPattern -> BadRequest
-        ValidationError.SocialMediaLinkValidationError.UrlValidationError.TooLongUrl -> BadRequest
     }
 }

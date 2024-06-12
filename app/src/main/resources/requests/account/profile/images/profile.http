@@ -1,0 +1,21 @@
+###
+GET http://localhost:8080/api/v1/account/user/images/profile
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+###
+POST http://localhost:8080/api/v1/account/user/images/profile
+Content-Type: multipart/form-data; boundary=Boundary
+Authorization: Bearer {{access_token}}
+
+--Boundary
+Content-Disposition: form-data; name="content"; filename="test.png"
+Content-Type: image/png
+
+< ./test.png
+--Boundary
+
+###
+DELETE http://localhost:8080/api/v1/account/user/images/profile
+Content-Type: application/json
+Authorization: Bearer {{access_token}}

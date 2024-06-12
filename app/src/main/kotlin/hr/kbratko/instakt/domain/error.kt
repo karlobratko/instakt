@@ -49,6 +49,18 @@ sealed interface DbError : DomainError {
     data object SocialMediaLinkForPlatformAlreadyExists : DbError
 
     data object SocialMediaLinkNotFound : DbError
+
+    data object CouldNotPersistContent : DbError
+
+    data object ContentNotFound : DbError
+
+    data object CouldNotDeleteContent : DbError
+
+    data object ContentMetadataNotFound : DbError
+
+    data object ProfilePictureMetadataNotFound : DbError
+
+    data object UnsupportedContentType : DbError
 }
 
 sealed interface SecurityError : DomainError {
@@ -131,6 +143,21 @@ sealed interface ValidationError : DomainError {
             data object TooShortPlatformName : PlatformValidationError
 
             data object TooLongPlatformName : PlatformValidationError
+        }
+    }
+
+    sealed interface ContentValidationError : ValidationError {
+        sealed interface ContentDescriptionValidationError : ContentValidationError {
+            data object TooLongContentDescription : ContentDescriptionValidationError
+        }
+
+        sealed interface ContentTagsValidationError : ContentValidationError {
+            data object TooShortContentTagName : ContentTagsValidationError
+            data object TooLongContentTagName : ContentTagsValidationError
+        }
+
+        sealed interface ContentSizeValidationError : ContentValidationError {
+            data object MaxContentSizeExceeded : ContentSizeValidationError
         }
     }
 }

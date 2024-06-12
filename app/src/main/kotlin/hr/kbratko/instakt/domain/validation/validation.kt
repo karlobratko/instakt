@@ -205,3 +205,12 @@ fun <Error> InstantAfterOrSameValidation(value: Instant, error: () -> Error) = I
         ensure(this@validation >= value) { error() }
     }
 }
+
+typealias ListValidationScope<Error, T> = ValidationScope<Error, List<T>>
+
+fun <Error, T> ListAllSatisfiesPredicateValidation(predicate: (T) -> Boolean, error: () -> Error) =
+    ListValidationScope<Error, T> {
+        applyWrapEitherNel {
+            ensure(all(predicate), error)
+        }
+    }

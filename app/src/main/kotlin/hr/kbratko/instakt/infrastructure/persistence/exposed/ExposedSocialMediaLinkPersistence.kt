@@ -17,6 +17,7 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -41,7 +42,7 @@ object SocialMediaLinksTable : LongIdTable("social_media_links", "social_media_l
     }
 }
 
-fun ExposedSocialMediaLinkPersistencePersistence(db: Database) =
+fun ExposedSocialMediaLinkPersistence(db: Database) =
     object : SocialMediaLinkPersistence {
         init {
             transaction {
@@ -78,7 +79,10 @@ fun ExposedSocialMediaLinkPersistencePersistence(db: Database) =
         override suspend fun update(data: SocialMediaLink.Edit): Either<DomainError, SocialMediaLink> = either {
             ioTransaction(db = db) {
                 val updatedCount = catchOrThrow<ExposedSQLException, Int> {
-                    SocialMediaLinksTable.update({ SocialMediaLinksTable.id eq data.id.value }) {
+                    SocialMediaLinksTable.update({
+                        (SocialMediaLinksTable.id eq data.id.value) and
+                        (SocialMediaLinksTable.userId eq data.userId.value )
+                    }) {
                         it[platform] = data.platform.value
                         it[url] = data.url.value
                     }
@@ -94,15 +98,16 @@ fun ExposedSocialMediaLinkPersistencePersistence(db: Database) =
             }
         }
 
-        override suspend fun delete(id: SocialMediaLink.Id): Either<DomainError, SocialMediaLink.Id> = either {
+        override suspend fun delete(data: SocialMediaLink.Delete): Either<DomainError, SocialMediaLink.Id> = either {
             ioTransaction(db = db) {
                 val deletedCount = SocialMediaLinksTable.deleteWhere {
-                    SocialMediaLinksTable.id eq id.value
+                    (id eq data.id.value) and
+                    (userId eq data.userId.value )
                 }
 
                 ensure(deletedCount > 0) { SocialMediaLinkNotFound }
 
-                id
+                data.id
             }
         }
     }
