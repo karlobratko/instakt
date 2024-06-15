@@ -27,8 +27,6 @@ import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
 import hr.kbratko.instakt.domain.toKotlinInstantOrNone
 import hr.kbratko.instakt.domain.toUUIDOrNone
-import hr.kbratko.instakt.infrastructure.persistence.exposed.UsersTable.profileSelection
-import hr.kbratko.instakt.infrastructure.persistence.exposed.UsersTable.userSelection
 import org.jetbrains.exposed.crypt.Encryptor
 import org.jetbrains.exposed.crypt.encryptedVarchar
 import org.jetbrains.exposed.dao.id.EntityID
@@ -61,26 +59,38 @@ object UsersTable : LongIdTable("users", "user_pk") {
         Encryptor({ hashPassword(it, generateSalt()) }, { it }, { it })
     )
     val role = enumeration<User.Role>("role")
+}
 
-    val userSelection = ColumnSelection(id, username, email, role) {
-        User(
-            User.Id(this[id].value),
-            User.Username(this[username]),
-            User.Email(this[email]),
-            this[role]
-        )
-    }
+val userSelection = TableSelection(
+    UsersTable.id,
+    UsersTable.username,
+    UsersTable.email,
+    UsersTable.role
+) {
+    User(
+        User.Id(this[UsersTable.id].value),
+        User.Username(this[UsersTable.username]),
+        User.Email(this[UsersTable.email]),
+        this[UsersTable.role]
+    )
+}
 
-    val profileSelection = ColumnSelection(username, email, firstName, lastName, bio, profilePictureId) {
-        User.Profile(
-            User.Username(this[username]),
-            User.Email(this[email]),
-            User.FirstName(this[firstName]),
-            User.LastName(this[lastName]),
-            User.Bio(this[bio]),
-            this[profilePictureId].toOption().map { ContentMetadata.Id(it.value.toString()) }
-        )
-    }
+val profileSelection = TableSelection(
+    UsersTable.username,
+    UsersTable.email,
+    UsersTable.firstName,
+    UsersTable.lastName,
+    UsersTable.bio,
+    UsersTable.profilePictureId
+) {
+    User.Profile(
+        User.Username(this[UsersTable.username]),
+        User.Email(this[UsersTable.email]),
+        User.FirstName(this[UsersTable.firstName]),
+        User.LastName(this[UsersTable.lastName]),
+        User.Bio(this[UsersTable.bio]),
+        this[UsersTable.profilePictureId].toOption().map { ContentMetadata.Id(it.value.toString()) }
+    )
 }
 
 fun ExposedUserPersistence(db: Database) =

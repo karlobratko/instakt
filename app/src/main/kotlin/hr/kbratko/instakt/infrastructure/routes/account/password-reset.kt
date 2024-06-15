@@ -18,6 +18,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
 import io.ktor.server.resources.post
+import io.ktor.server.resources.put
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import kotlinx.serialization.Serializable
@@ -64,7 +65,7 @@ fun Route.passwordReset() {
             }.toResponse(HttpStatusCode.Created).let { call.respond(it.code, it) }
         }
 
-        post<PasswordReset, PasswordReset.Body> { _, body ->
+        put<PasswordReset, PasswordReset.Body> { _, body ->
             either<DomainError, Unit> {
                 val token = Token.PasswordReset(body.token)
                 val userId = passwordResetTokenPersistence.selectUserId(token)

@@ -1,6 +1,6 @@
 package hr.kbratko.instakt.infrastructure.plugins
 
-import hr.kbratko.instakt.infrastructure.serialization.custom.UUIDSerializer
+import hr.kbratko.instakt.domain.serialization.custom.UUIDSerializer
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install

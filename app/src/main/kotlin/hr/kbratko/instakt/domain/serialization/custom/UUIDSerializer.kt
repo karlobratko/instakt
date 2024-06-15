@@ -1,4 +1,4 @@
-package hr.kbratko.instakt.infrastructure.serialization.custom
+package hr.kbratko.instakt.domain.serialization.custom
 
 import java.util.UUID
 import kotlinx.serialization.KSerializer

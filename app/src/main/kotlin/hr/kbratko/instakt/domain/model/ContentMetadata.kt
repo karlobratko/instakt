@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ContentMetadata(
     val id: Id,
-    val userId: User.Id,
+    val user: User,
     val url: Content.Id,
     val description: Description,
     val uploadedAt: Instant,

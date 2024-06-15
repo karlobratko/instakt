@@ -11,7 +11,6 @@ import hr.kbratko.instakt.domain.conversion.convert
 import hr.kbratko.instakt.domain.model.SocialMediaLink
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.SocialMediaLinkPersistence
-import hr.kbratko.instakt.infrastructure.persistence.exposed.SocialMediaLinksTable.linkSelection
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.exceptions.ExposedSQLException
@@ -32,14 +31,18 @@ object SocialMediaLinksTable : LongIdTable("social_media_links", "social_media_l
     val userId = reference("user_fk", UsersTable, onDelete = Cascade)
     val platform = varchar("platform", 100)
     val url = varchar("url", 256)
+}
 
-    val linkSelection = ColumnSelection(id, platform, url) {
-        SocialMediaLink(
-            SocialMediaLink.Id(this[id].value),
-            SocialMediaLink.Platform(this[platform]),
-            SocialMediaLink.Url(this[url])
-        )
-    }
+val linkSelection = TableSelection(
+    SocialMediaLinksTable.id,
+    SocialMediaLinksTable.platform,
+    SocialMediaLinksTable.url
+) {
+    SocialMediaLink(
+        SocialMediaLink.Id(this[SocialMediaLinksTable.id].value),
+        SocialMediaLink.Platform(this[SocialMediaLinksTable.platform]),
+        SocialMediaLink.Url(this[SocialMediaLinksTable.url])
+    )
 }
 
 fun ExposedSocialMediaLinkPersistence(db: Database) =

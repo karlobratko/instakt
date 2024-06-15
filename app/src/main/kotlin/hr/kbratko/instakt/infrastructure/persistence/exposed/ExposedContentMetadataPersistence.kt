@@ -19,8 +19,6 @@ import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
 import hr.kbratko.instakt.domain.toKotlinInstant
 import hr.kbratko.instakt.domain.toUUIDOrNone
-import hr.kbratko.instakt.infrastructure.persistence.exposed.ContentMetadataTable.metadataSelection
-import hr.kbratko.instakt.infrastructure.persistence.exposed.TagsTable.tagSelection
 import java.util.UUID
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
@@ -45,25 +43,33 @@ object ContentMetadataTable : UUIDTable("content_metadata", "content_metadata_pk
     val path = varchar("path", 256)
     val description = varchar("description", 1024).default("")
     val uploadedAt = timestampWithTimeZone("uploaded_at").defaultExpression(CurrentTimestamp())
-
-    val metadataSelection = ColumnSelection(id, userId, path, description, uploadedAt) {
-        ContentMetadata(
-            ContentMetadata.Id(this[id].value.toString()),
-            User.Id(this[userId].value),
-            Content.Id(this[path]),
-            ContentMetadata.Description(this[description]),
-            this[uploadedAt].toKotlinInstant(),
-            emptyList()
-        )
-    }
 }
 
 object TagsTable : LongIdTable("tags", "tag_pk") {
     val name = varchar("name", 50)
     val contentMetadataId = reference("content_metadata_fk", ContentMetadataTable, onDelete = Cascade)
-
-    val tagSelection = ColumnSelection(name) { ContentMetadata.Tag(this[name]) }
 }
+
+val metadataSelection = TableSelection(
+    listOf(
+        ContentMetadataTable.id,
+        ContentMetadataTable.userId,
+        ContentMetadataTable.path,
+        ContentMetadataTable.description,
+        ContentMetadataTable.uploadedAt
+    ) + userSelection.columns
+) {
+    ContentMetadata(
+        ContentMetadata.Id(this[ContentMetadataTable.id].value.toString()),
+        this.convert(userSelection.conversion),
+        Content.Id(this[ContentMetadataTable.path]),
+        ContentMetadata.Description(this[ContentMetadataTable.description]),
+        this[ContentMetadataTable.uploadedAt].toKotlinInstant(),
+        emptyList()
+    )
+}
+
+val tagSelection = TableSelection(TagsTable.name) { ContentMetadata.Tag(this[TagsTable.name]) }
 
 fun ExposedContentMetadataPersistence(db: Database) =
     object : ContentMetadataPersistence {
@@ -105,7 +111,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
 
         override suspend fun selectProfile(userId: User.Id): Option<ContentMetadata> = ioTransaction(db = db) {
             ContentMetadataTable.innerJoin(UsersTable, onColumn = { this.id }, otherColumn = { this.profilePictureId })
-                .select(metadataSelection.columns + UsersTable.profilePictureId)
+                .select(metadataSelection.columns)
                 .where {
                     (ContentMetadataTable.userId eq userId.value) and
                             (ContentMetadataTable.id eq UsersTable.profilePictureId)
@@ -128,7 +134,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
                             ifSome = {
                                 Op.build {
                                     (ContentMetadataTable.userId eq userId.value) and
-                                    (ContentMetadataTable.id neq it)
+                                            (ContentMetadataTable.id neq it)
                                 }
                             }
                         )
@@ -148,7 +154,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
                     { it.convert(tagSelection.conversion) }
                 )
 
-            ContentMetadataTable
+            (UsersTable innerJoin ContentMetadataTable)
                 .select(metadataSelection.columns)
                 .where { notProfilePicture }
                 .map { row ->
@@ -200,7 +206,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
         }
 
         private fun forceSelectMetadata(id: UUID) =
-            ContentMetadataTable
+            (UsersTable innerJoin ContentMetadataTable)
                 .select(metadataSelection.columns)
                 .where { ContentMetadataTable.id eq id }
                 .single()

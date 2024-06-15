@@ -6,15 +6,16 @@ package hr.kbratko.instakt.domain.model
 
 import arrow.core.Option
 import arrow.core.serialization.OptionSerializer
+import hr.kbratko.instakt.domain.serialization.custom.UserSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 
-@Serializable
+@Serializable(with = UserSerializer::class)
 data class User(
     val id: Id,
     val username: Username,
     val email: Email,
-    val role: Role
+    val role: Role = Role.Regular
 ) {
     @Serializable
     data class Profile(

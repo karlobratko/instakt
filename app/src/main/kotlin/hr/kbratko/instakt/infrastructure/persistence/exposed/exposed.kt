@@ -15,7 +15,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.experimental.withSuspendTransaction
 import kotlin.coroutines.CoroutineContext
 
-data class ColumnSelection<T>(
+data class TableSelection<T>(
     val columns: List<Column<*>>,
     val conversion: ConversionScope<ResultRow, T>
 ) {
