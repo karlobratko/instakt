@@ -8,11 +8,16 @@ import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.SecurityContext
 import hr.kbratko.instakt.domain.security.Token
 import hr.kbratko.instakt.domain.security.jwt.JwtTokenService
+import hr.kbratko.instakt.domain.validation.PasswordIsValid
+import hr.kbratko.instakt.domain.validation.UsernameIsValid
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
 import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -37,6 +42,15 @@ data class Access(val parent: Auth = Auth()) {
     }
 
     @Serializable data class Response(val accessToken: Token.Access, val refreshToken: Token.Refresh)
+}
+
+fun RequestValidationConfig.accessValidation() {
+    validate<Access.Acquire.Body> { request ->
+        validate(request) {
+            with { it.username.validate(UsernameIsValid) }
+            with { it.password.validate(PasswordIsValid) }
+        }.foldValidation()
+    }
 }
 
 fun Route.access() {

@@ -6,6 +6,7 @@ import arrow.core.toEitherNel
 import hr.kbratko.instakt.domain.DbError.UnknownRegistrationToken
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
+import hr.kbratko.instakt.domain.ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
 import hr.kbratko.instakt.domain.eitherNel
 import hr.kbratko.instakt.domain.mailing.Email
 import hr.kbratko.instakt.domain.mailing.MailingService
@@ -14,13 +15,24 @@ import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.validation.EmailIsValid
+import hr.kbratko.instakt.domain.validation.FirstNameIsValid
+import hr.kbratko.instakt.domain.validation.LastNameIsValid
+import hr.kbratko.instakt.domain.validation.PasswordIsValid
+import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
+import hr.kbratko.instakt.domain.validation.UsernameIsValid
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.mailing.Senders
 import hr.kbratko.instakt.infrastructure.mailing.templates.ConfirmRegistration
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
+import io.ktor.server.plugins.requestvalidation.ValidationResult.Invalid
+import io.ktor.server.plugins.requestvalidation.ValidationResult.Valid
 import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -59,6 +71,30 @@ data class Register(val parent: Auth = Auth()) {
             data class WithEmail(val email: String, override val redirectUrl: String) : Body
         }
 
+    }
+}
+
+fun RequestValidationConfig.registerValidation() {
+    validate<Register.Body> { request ->
+        validate(request) {
+            with { it.username.validate(UsernameIsValid) }
+            with { it.email.validate(EmailIsValid) }
+            with { it.firstName.validate(FirstNameIsValid) }
+            with { it.lastName.validate(LastNameIsValid) }
+            with { it.password.validate(PasswordIsValid) }
+            with { it.redirectUrl.validate(StringMatchingPatternValidation("^(https?)://(localhost|(([a-zA-Z0-9.-]+)\\.([a-zA-Z]{2,}))|((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]))(:[0-9]+)?(/[a-zA-Z0-9.-]*)*/?$".toRegex()) { InvalidRedirectUrlPattern }) }
+        }.foldValidation()
+    }
+
+    validate<Register.Reset.Body> { request ->
+        when (request) {
+            is Register.Reset.Body.WithEmail -> request.email.validate(EmailIsValid).fold(
+                ifLeft = { errors -> Invalid(errors.map { it.toString() }) },
+                ifRight = { Valid }
+            )
+
+            is Register.Reset.Body.WithToken -> Valid
+        }
     }
 }
 

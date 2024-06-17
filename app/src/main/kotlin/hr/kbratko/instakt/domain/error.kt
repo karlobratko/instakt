@@ -78,6 +78,17 @@ sealed interface SecurityError : DomainError {
 }
 
 sealed interface ValidationError : DomainError {
+    sealed interface PaginationValidationError : ValidationError {
+        sealed interface CountValidation : PaginationValidationError {
+            data object NegativePageCount : CountValidation
+            data object TooBigPageCount : CountValidation
+        }
+
+        sealed interface PageNumberValidation : PaginationValidationError {
+            data object NegativePageNumber : PageNumberValidation
+        }
+    }
+
     sealed interface UserValidationError : ValidationError {
         sealed interface UsernameValidationError : UserValidationError {
             data object NonAlphanumericCharacterInUsername : UsernameValidationError
@@ -158,6 +169,14 @@ sealed interface ValidationError : DomainError {
 
         sealed interface ContentSizeValidationError : ContentValidationError {
             data object MaxContentSizeExceeded : ContentSizeValidationError
+        }
+
+        sealed interface ContentUploadRangeError : ContentValidationError {
+            data object StartDateIsAfterEndDate : ContentUploadRangeError
+        }
+
+        sealed interface ContentSortTermError : ContentValidationError {
+            data object UnsupportedSortTerm : ContentSortTermError
         }
     }
 }

@@ -1,5 +1,8 @@
 package hr.kbratko.instakt.domain.model
 
+import arrow.core.Nel
+import arrow.core.Option
+import hr.kbratko.instakt.domain.InstantClosedRange
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -38,6 +41,13 @@ data class ContentMetadata(
 
     class DeleteProfile(
         val userId: User.Id,
+    )
+
+    class Filter(
+        val username: Option<User.Username>,
+        val description: Option<Description>,
+        val uploadedAtBetween: Option<InstantClosedRange>,
+        val tags: Option<Nel<Tag>>,
     )
 
     @Serializable @JvmInline value class Id(val value: String)

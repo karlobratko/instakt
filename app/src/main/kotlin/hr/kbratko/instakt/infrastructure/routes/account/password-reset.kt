@@ -4,19 +4,26 @@ import arrow.core.raise.either
 import hr.kbratko.instakt.domain.DbError.UnknownPasswordResetToken
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
+import hr.kbratko.instakt.domain.ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
 import hr.kbratko.instakt.domain.mailing.MailingService
 import hr.kbratko.instakt.domain.mailing.send
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.PasswordResetTokenPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.validation.EmailIsValid
+import hr.kbratko.instakt.domain.validation.PasswordIsValid
+import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.mailing.Senders
 import hr.kbratko.instakt.infrastructure.mailing.templates.ResetPassword
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
 import io.ktor.server.resources.post
 import io.ktor.server.resources.put
 import io.ktor.server.response.respond
@@ -37,6 +44,21 @@ data class PasswordReset(val parent: Account = Account()) {
             val redirectUrl: String,
             val email: String
         )
+    }
+}
+
+fun RequestValidationConfig.passwordResetValidation() {
+    validate<PasswordReset.Acquire.Body> { request ->
+        validate(request) {
+            with { it.redirectUrl.validate(StringMatchingPatternValidation("^(https?)://(localhost|(([a-zA-Z0-9.-]+)\\.([a-zA-Z]{2,}))|((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]))(:[0-9]+)?(/[a-zA-Z0-9.-]*)*/?$".toRegex()) { InvalidRedirectUrlPattern }) }
+            with { it.email.validate(EmailIsValid) }
+        }.foldValidation()
+    }
+
+    validate<PasswordReset.Body> { request ->
+        validate(request) {
+            with { it.newPassword.validate(PasswordIsValid) }
+        }.foldValidation()
     }
 }
 

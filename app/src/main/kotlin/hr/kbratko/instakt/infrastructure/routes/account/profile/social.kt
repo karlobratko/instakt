@@ -3,16 +3,21 @@ package hr.kbratko.instakt.infrastructure.routes.account.profile
 import arrow.core.raise.either
 import hr.kbratko.instakt.domain.model.SocialMediaLink
 import hr.kbratko.instakt.domain.persistence.SocialMediaLinkPersistence
+import hr.kbratko.instakt.domain.validation.PlatformIsValid
+import hr.kbratko.instakt.domain.validation.UrlIsValid
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.Response
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import hr.kbratko.instakt.infrastructure.security.UserPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
 import io.ktor.server.resources.delete
 import io.ktor.server.resources.get
 import io.ktor.server.resources.post
@@ -37,6 +42,23 @@ data class Social(val parent: UserProfile = UserProfile()) {
         )
     }
 }
+
+fun RequestValidationConfig.socialValidation() {
+    validate<Social.Body> { request ->
+        validate(request) {
+            with { it.platform.validate(PlatformIsValid) }
+            with { it.url.validate(UrlIsValid) }
+        }.foldValidation()
+    }
+
+    validate<Social.Id.Body> { request ->
+        validate(request) {
+            with { it.platform.validate(PlatformIsValid) }
+            with { it.url.validate(UrlIsValid) }
+        }.foldValidation()
+    }
+}
+
 
 fun Route.social() {
     val socialMediaLinkPersistence by inject<SocialMediaLinkPersistence>()

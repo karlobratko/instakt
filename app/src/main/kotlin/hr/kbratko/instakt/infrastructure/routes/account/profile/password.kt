@@ -4,14 +4,18 @@ import arrow.core.raise.either
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
+import hr.kbratko.instakt.domain.validation.PasswordIsValid
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import hr.kbratko.instakt.infrastructure.security.UserPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
 import io.ktor.server.resources.put
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -24,6 +28,15 @@ data class Password(val parent: UserProfile = UserProfile()) {
         val oldPassword: String,
         val newPassword: String
     )
+}
+
+fun RequestValidationConfig.passwordValidation() {
+    validate<Password.Body> { request ->
+        validate(request) {
+            with { it.oldPassword.validate(PasswordIsValid) }
+            with { it.newPassword.validate(PasswordIsValid) }
+        }.foldValidation()
+    }
 }
 
 fun Route.password() {

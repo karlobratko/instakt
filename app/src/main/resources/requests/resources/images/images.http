@@ -1,3 +1,24 @@
 ###
 GET http://localhost:8080/api/v1/resources/images/2/2024/6/12/4ff26e55-0789-40aa-beae-ffb32566a09c
 Content-Type: application/json
+
+###
+POST http://localhost:8080/api/v1/resources/images
+Content-Type: application/json
+
+{
+  "filter": {
+    "username": "kbra",
+    "description": "image description",
+    "uploadedBetween": null,
+    "tags": ["tag2"]
+  },
+  "page": {
+    "number": 0,
+    "count": 10
+  },
+  "sort": {
+    "by": "uploadedAt",
+    "order": "desc"
+  }
+}

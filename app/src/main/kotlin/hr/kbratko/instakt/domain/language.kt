@@ -18,10 +18,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.Serializable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.math.pow
@@ -38,6 +40,11 @@ fun String.toDuration() = Duration.parse(this)
 fun OffsetDateTime.toKotlinInstant() = toInstant().toKotlinInstant()
 
 fun Instant.toLocalDate(timeZone: TimeZone) = toLocalDateTime(timeZone).date
+
+@Serializable data class InstantClosedRange(
+    override val start: Instant,
+    override val endInclusive: Instant = Clock.System.now()
+) : ClosedRange<Instant>
 
 /**
  * This function is an extension function for the String class. It converts the first character of the string

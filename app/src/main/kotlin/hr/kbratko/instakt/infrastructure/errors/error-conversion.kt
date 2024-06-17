@@ -80,7 +80,12 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.ContentValidationError.ContentDescriptionValidationError.TooLongContentDescription,
         ValidationError.ContentValidationError.ContentTagsValidationError.TooLongContentTagName,
         ValidationError.ContentValidationError.ContentTagsValidationError.TooShortContentTagName,
-        ValidationError.ContentValidationError.ContentSizeValidationError.MaxContentSizeExceeded -> BadRequest
+        ValidationError.ContentValidationError.ContentSizeValidationError.MaxContentSizeExceeded,
+        ValidationError.ContentValidationError.ContentSortTermError.UnsupportedSortTerm,
+        ValidationError.ContentValidationError.ContentUploadRangeError.StartDateIsAfterEndDate,
+        ValidationError.PaginationValidationError.CountValidation.TooBigPageCount,
+        ValidationError.PaginationValidationError.CountValidation.NegativePageCount,
+        ValidationError.PaginationValidationError.PageNumberValidation.NegativePageNumber -> BadRequest
 
         // NotFound
         DbError.InvalidRefreshToken,

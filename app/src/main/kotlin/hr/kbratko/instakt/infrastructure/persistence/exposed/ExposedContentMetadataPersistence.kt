@@ -2,31 +2,41 @@ package hr.kbratko.instakt.infrastructure.persistence.exposed
 
 import arrow.core.Either
 import arrow.core.Option
+import arrow.core.getOrElse
 import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.singleOrNone
+import arrow.core.some
 import arrow.core.toOption
 import hr.kbratko.instakt.domain.DbError.ContentMetadataNotFound
 import hr.kbratko.instakt.domain.DbError.ProfilePictureMetadataNotFound
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
+import hr.kbratko.instakt.domain.conversion.ConversionScope
 import hr.kbratko.instakt.domain.conversion.convert
 import hr.kbratko.instakt.domain.getOrRaise
 import hr.kbratko.instakt.domain.model.Content
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
+import hr.kbratko.instakt.domain.persistence.pagination.Page
+import hr.kbratko.instakt.domain.persistence.pagination.Sort
 import hr.kbratko.instakt.domain.toKotlinInstant
 import hr.kbratko.instakt.domain.toUUIDOrNone
+import hr.kbratko.instakt.infrastructure.persistence.exposed.pagination.toOrderedExpressions
+import java.time.ZoneOffset.UTC
 import java.util.UUID
+import kotlinx.datetime.toJavaInstant
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.innerJoin
@@ -109,6 +119,64 @@ fun ExposedContentMetadataPersistence(db: Database) =
                 }
             }
 
+        override suspend fun select(
+            filter: ContentMetadata.Filter,
+            page: Page,
+            sort: Option<Sort>
+        ): Set<ContentMetadata> =
+            ioTransaction(db = db) {
+                val metadataIds = mutableListOf<EntityID<UUID>>()
+                val metadata = ContentMetadataTable
+                    .innerJoin(UsersTable, { userId }, { id })
+                    .select(metadataSelection.columns)
+                    .apply {
+                        filter.username.onSome {
+                            andWhere { UsersTable.username like "%${it.value}%" }
+                        }
+                        filter.description.onSome {
+                            andWhere { ContentMetadataTable.description like "%${it.value}%" }
+                        }
+                        filter.uploadedAtBetween.onSome {
+                            andWhere {
+                                ContentMetadataTable.uploadedAt.between(
+                                    it.start.toJavaInstant().atOffset(UTC),
+                                    it.endInclusive.toJavaInstant().atOffset(UTC)
+                                )
+                            }
+                        }
+                        filter.tags.onSome { tags ->
+                            andWhere {
+                                ContentMetadataTable.id.inSubQuery(
+                                    TagsTable
+                                        .select(TagsTable.contentMetadataId)
+                                        .where { TagsTable.name inList tags.map { it.value } }
+                                )
+                            }
+                        }
+                    }
+                    .orderBy(
+                        *sort.getOrElse { Sort("id") }
+                            .toOrderedExpressions(ColumnNameToColumnConversion)
+                            .toTypedArray()
+                    )
+                    .limit(page.count, page.offset)
+                    .distinct()
+                    .map { row ->
+                        metadataIds += row[ContentMetadataTable.id]
+                        row.convert(metadataSelection.conversion)
+                    }
+
+                val tags = TagsTable
+                    .select(tagSelection.columns + TagsTable.contentMetadataId)
+                    .where { TagsTable.contentMetadataId inList metadataIds }
+                    .groupBy(
+                        { ContentMetadata.Id(it[TagsTable.contentMetadataId].value.toString()) },
+                        { it.convert(tagSelection.conversion) }
+                    )
+
+                metadata.map { it.copy(tags = tags[it.id]!!) }.toSet()
+            }
+
         override suspend fun selectProfile(userId: User.Id): Option<ContentMetadata> = ioTransaction(db = db) {
             ContentMetadataTable.innerJoin(UsersTable, onColumn = { this.id }, otherColumn = { this.profilePictureId })
                 .select(metadataSelection.columns)
@@ -126,15 +194,10 @@ fun ExposedContentMetadataPersistence(db: Database) =
                     ifLeft = { return@ioTransaction emptySet() },
                     ifRight = {
                         it.fold(
-                            ifEmpty = {
-                                Op.build {
-                                    (ContentMetadataTable.userId eq userId.value)
-                                }
-                            },
+                            ifEmpty = { (ContentMetadataTable.userId eq userId.value) },
                             ifSome = {
                                 Op.build {
-                                    (ContentMetadataTable.userId eq userId.value) and
-                                            (ContentMetadataTable.id neq it)
+                                    (ContentMetadataTable.userId eq userId.value) and (ContentMetadataTable.id neq it)
                                 }
                             }
                         )
@@ -237,7 +300,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
             tags: List<ContentMetadata.Tag>
         ): List<ContentMetadata.Tag> =
             TagsTable
-                .batchInsert(tags) {
+                .batchInsert(tags.toSet()) {
                     this[TagsTable.name] = it.value
                     this[TagsTable.contentMetadataId] = contentMetadataId
                 }
@@ -280,3 +343,14 @@ fun ExposedContentMetadataPersistence(db: Database) =
             return insertTags(contentMetadataId, tags)
         }
     }
+
+private val ColumnNameToColumnConversion = ConversionScope<String, Option<Column<*>>> {
+    when (this) {
+        "id" -> ContentMetadataTable.id.some()
+        "userId" -> ContentMetadataTable.userId.some()
+        "path" -> ContentMetadataTable.path.some()
+        "description" -> ContentMetadataTable.description.some()
+        "uploadedAt" -> ContentMetadataTable.uploadedAt.some()
+        else -> arrow.core.none()
+    }
+}

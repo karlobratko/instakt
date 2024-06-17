@@ -4,17 +4,23 @@ import arrow.core.raise.either
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
+import hr.kbratko.instakt.domain.validation.BioIsValid
+import hr.kbratko.instakt.domain.validation.FirstNameIsValid
+import hr.kbratko.instakt.domain.validation.LastNameIsValid
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.account.Account
 import hr.kbratko.instakt.infrastructure.routes.account.profile.images.images
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import hr.kbratko.instakt.infrastructure.security.UserPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
 import io.ktor.server.resources.get
 import io.ktor.server.resources.put
 import io.ktor.server.response.respond
@@ -29,6 +35,16 @@ data class UserProfile(val parent: Account = Account()) {
         val lastName: String,
         val bio: String
     )
+}
+
+fun RequestValidationConfig.userProfileValidation() {
+    validate<UserProfile.Body> { request ->
+        validate(request) {
+            with { it.firstName.validate(FirstNameIsValid) }
+            with { it.lastName.validate(LastNameIsValid) }
+            with { it.bio.validate(BioIsValid) }
+        }.foldValidation()
+    }
 }
 
 fun Route.profile() {

@@ -11,12 +11,16 @@ import hr.kbratko.instakt.domain.content.ContentService.Metadata
 import hr.kbratko.instakt.domain.eitherNel
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
+import hr.kbratko.instakt.domain.validation.ContentDescriptionIsValid
+import hr.kbratko.instakt.domain.validation.ContentTagsAreValid
+import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.Response
 import hr.kbratko.instakt.infrastructure.routes.account.profile.UserProfile
+import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
 import hr.kbratko.instakt.infrastructure.security.UserPrincipal
 import io.ktor.http.HttpStatusCode
@@ -25,6 +29,7 @@ import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
+import io.ktor.server.plugins.requestvalidation.RequestValidationConfig
 import io.ktor.server.request.receiveMultipart
 import io.ktor.server.resources.delete
 import io.ktor.server.resources.get
@@ -52,6 +57,22 @@ data class Images(val parent: UserProfile = UserProfile()) {
             val description: String,
             val tags: List<String>
         )
+    }
+}
+
+fun RequestValidationConfig.profileImagesValidation() {
+    validate<Images.Body> { request ->
+        validate(request) {
+            with { it.description.validate(ContentDescriptionIsValid) }
+            with { it.tags.validate(ContentTagsAreValid) }
+        }.foldValidation()
+    }
+
+    validate<Images.Id.Body> { request ->
+        validate(request) {
+            with { it.description.validate(ContentDescriptionIsValid) }
+            with { it.tags.validate(ContentTagsAreValid) }
+        }.foldValidation()
     }
 }
 

@@ -105,11 +105,12 @@ fun <Error> StringIsUUIDValidation(error: () -> Error) = StringValidationScope {
     this.toUUIDOrNone().map { this }.toEitherNel { error() }
 }
 
-inline fun <Error, reified E : Enum<E>> StringIsEnumValidation(crossinline error: () -> Error) = StringValidationScope validation@{
-    applyWrapEitherNel {
-        ensure(enumValues<E>().toList().map { it.toString() }.contains(this@validation), error)
+inline fun <Error, reified E : Enum<E>> StringIsEnumValidation(crossinline error: () -> Error) =
+    StringValidationScope validation@{
+        applyWrapEitherNel {
+            ensure(enumValues<E>().toList().map { it.toString() }.contains(this@validation), error)
+        }
     }
-}
 
 typealias IntValidationScope<Error> = ValidationScope<Error, Int>
 
@@ -124,6 +125,30 @@ fun <Error> IntInInclusiveRangeValidation(min: Int, max: Int, error: () -> Error
 
 fun <Error> IntInExclusiveRangeValidation(min: Int, maxExclusive: Int, error: () -> Error) =
     IntInRangeValidation(min..<maxExclusive, error)
+
+fun <Error> IntLessThanValidation(max: Int, error: () -> Error) = IntValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation < max) { error() }
+    }
+}
+
+fun <Error> IntLessThanOrEqualValidation(max: Int, error: () -> Error) = IntValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation <= max) { error() }
+    }
+}
+
+fun <Error> IntGreaterThanValidation(min: Int, error: () -> Error) = IntValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation > min) { error() }
+    }
+}
+
+fun <Error> IntGreaterThanOrEqualValidation(min: Int, error: () -> Error) = IntValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation >= min) { error() }
+    }
+}
 
 typealias BigDecimalValidationScope<Error> = ValidationScope<Error, BigDecimal>
 
@@ -214,3 +239,36 @@ fun <Error, T> ListAllSatisfiesPredicateValidation(predicate: (T) -> Boolean, er
             ensure(all(predicate), error)
         }
     }
+
+fun <Error, T> ListNotEmptyValidation(error: () -> Error) =
+    ListValidationScope<Error, T> {
+        applyWrapEitherNel {
+            ensure(isNotEmpty(), error)
+        }
+    }
+
+typealias LongValidationScope<Error> = ValidationScope<Error, Long>
+
+fun <Error> LongLessThanValidation(max: Long, error: () -> Error) = LongValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation < max) { error() }
+    }
+}
+
+fun <Error> LongLessThanOrEqualValidation(max: Long, error: () -> Error) = LongValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation <= max) { error() }
+    }
+}
+
+fun <Error> LongGreaterThanValidation(min: Long, error: () -> Error) = LongValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation > min) { error() }
+    }
+}
+
+fun <Error> LongGreaterThanOrEqualValidation(min: Long, error: () -> Error) = LongValidationScope validation@{
+    applyWrapEitherNel {
+        ensure(this@validation >= min) { error() }
+    }
+}
