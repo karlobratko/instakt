@@ -30,7 +30,7 @@ val ContentTagsAreValid = ContentTagsValidationScope {
 
 typealias ContentSizeValidationScope = ValidationScope<ContentSizeValidationError, ByteArray>
 
-const val MAX_FILE_SIZE = 4 * 1024 * 1024
+const val MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB
 
 val ContentSizeIsValid = ContentSizeValidationScope {
     applyWrapEitherNel {

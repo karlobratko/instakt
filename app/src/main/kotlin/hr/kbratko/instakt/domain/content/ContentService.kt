@@ -63,6 +63,8 @@ fun ContentService(
             ContentMetadata.New(
                 userId,
                 content.id,
+                content.type,
+                ContentMetadata.SizeInBytes(content.value.size),
                 metadata.description,
                 metadata.tags
             )
@@ -101,7 +103,12 @@ fun ContentService(
         ).toEitherNel().bind()
 
         contentMetadataPersistence.insert(
-            ContentMetadata.NewProfile(userId, content.id)
+            ContentMetadata.NewProfile(
+                userId,
+                content.id,
+                content.type,
+                ContentMetadata.SizeInBytes(content.value.size),
+            )
         ).toEitherNel().bind()
     }
 

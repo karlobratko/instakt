@@ -172,6 +172,7 @@ class ResponseSerializer<A>(tSerializer: KSerializer<A>) : KSerializer<Response<
         @EncodeDefault(mode = Never) val data: A? = null,
         @EncodeDefault(mode = Never) val errors: List<String>? = null
     ) {
+        @Serializable
         enum class Status {
             @SerialName("success")
             Success,

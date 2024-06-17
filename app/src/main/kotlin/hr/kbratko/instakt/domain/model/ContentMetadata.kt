@@ -11,6 +11,7 @@ data class ContentMetadata(
     val id: Id,
     val user: User,
     val url: Content.Id,
+    val type: Content.Type,
     val description: Description,
     val uploadedAt: Instant,
     val tags: List<Tag>
@@ -18,13 +19,17 @@ data class ContentMetadata(
     class New(
         val userId: User.Id,
         val contentId: Content.Id,
+        val type: Content.Type,
+        val size: SizeInBytes,
         val description: Description,
         val tags: List<Tag>
     )
 
     class NewProfile(
         val userId: User.Id,
-        val contentId: Content.Id
+        val contentId: Content.Id,
+        val type: Content.Type,
+        val size: SizeInBytes,
     )
 
     class Edit(
@@ -53,6 +58,8 @@ data class ContentMetadata(
     @Serializable @JvmInline value class Id(val value: String)
 
     @Serializable @JvmInline value class Description(val value: String = "")
+
+    @Serializable @JvmInline value class SizeInBytes(val value: Int)
 
     @Serializable @JvmInline value class Tag(val value: String)
 }

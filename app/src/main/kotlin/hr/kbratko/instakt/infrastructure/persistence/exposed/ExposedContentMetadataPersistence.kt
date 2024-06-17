@@ -51,6 +51,8 @@ import org.jetbrains.exposed.sql.SchemaUtils.create as createIfNotExists
 object ContentMetadataTable : UUIDTable("content_metadata", "content_metadata_pk") {
     val userId = reference("user_fk", UsersTable, onDelete = Cascade)
     val path = varchar("path", 256)
+    val contentType = enumeration<Content.Type>("content_type")
+    val sizeInBytes = integer("size_bytes")
     val description = varchar("description", 1024).default("")
     val uploadedAt = timestampWithTimeZone("uploaded_at").defaultExpression(CurrentTimestamp())
 }
@@ -65,6 +67,8 @@ val metadataSelection = TableSelection(
         ContentMetadataTable.id,
         ContentMetadataTable.userId,
         ContentMetadataTable.path,
+        ContentMetadataTable.contentType,
+        ContentMetadataTable.sizeInBytes,
         ContentMetadataTable.description,
         ContentMetadataTable.uploadedAt
     ) + userSelection.columns
@@ -73,6 +77,7 @@ val metadataSelection = TableSelection(
         ContentMetadata.Id(this[ContentMetadataTable.id].value.toString()),
         this.convert(userSelection.conversion),
         Content.Id(this[ContentMetadataTable.path]),
+        this[ContentMetadataTable.contentType],
         ContentMetadata.Description(this[ContentMetadataTable.description]),
         this[ContentMetadataTable.uploadedAt].toKotlinInstant(),
         emptyList()
@@ -93,6 +98,8 @@ fun ExposedContentMetadataPersistence(db: Database) =
             val contentMetadataId = ContentMetadataTable.insertAndGetId {
                 it[userId] = metadata.userId.value
                 it[path] = metadata.contentId.value
+                it[contentType] = metadata.type
+                it[sizeInBytes] = metadata.size.value
                 it[description] = metadata.description.value
             }
 
@@ -288,6 +295,8 @@ fun ExposedContentMetadataPersistence(db: Database) =
                 .insertAndGetId {
                     it[userId] = metadata.userId.value
                     it[path] = metadata.contentId.value
+                    it[contentType] = metadata.type
+                    it[sizeInBytes] = metadata.size.value
                 }
                 .also { id ->
                     UsersTable.update({ UsersTable.id eq metadata.userId.value }) {

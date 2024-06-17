@@ -1,5 +1,6 @@
 package hr.kbratko.instakt.domain.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 data class Content(
@@ -16,9 +17,11 @@ data class Content(
     @Serializable @JvmInline value class Id(val value: String)
     @JvmInline value class Bucket(val value: String)
 
+
+    @Serializable
     enum class Type(val value: String) {
-        jpeg("image/jpeg"),
-        png("image/png"),
+        @SerialName("image/jpeg") jpeg("image/jpeg"),
+        @SerialName("image/png") png("image/png"),
 //        webp("image/webp"),
 //        avif("image/avif"),
 //        heif("image/heif"),
