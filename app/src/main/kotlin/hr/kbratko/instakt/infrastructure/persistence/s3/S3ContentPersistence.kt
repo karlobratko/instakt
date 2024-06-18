@@ -19,7 +19,7 @@ import hr.kbratko.instakt.domain.model.Content
 import hr.kbratko.instakt.domain.model.Content.Id
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.ContentPersistence
-import hr.kbratko.instakt.domain.toLocalDate
+import hr.kbratko.instakt.domain.utility.toLocalDate
 import java.util.UUID
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone.Companion.UTC

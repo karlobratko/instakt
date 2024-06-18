@@ -15,15 +15,17 @@ import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.conversion.ConversionScope
 import hr.kbratko.instakt.domain.conversion.convert
-import hr.kbratko.instakt.domain.getOrRaise
+import hr.kbratko.instakt.domain.utility.getOrRaise
 import hr.kbratko.instakt.domain.model.Content
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
 import hr.kbratko.instakt.domain.persistence.pagination.Page
 import hr.kbratko.instakt.domain.persistence.pagination.Sort
-import hr.kbratko.instakt.domain.toKotlinInstant
-import hr.kbratko.instakt.domain.toUUIDOrNone
+import hr.kbratko.instakt.domain.utility.MemorySize
+import hr.kbratko.instakt.domain.utility.bytes
+import hr.kbratko.instakt.domain.utility.toKotlinInstant
+import hr.kbratko.instakt.domain.utility.toUUIDOrNone
 import hr.kbratko.instakt.infrastructure.persistence.exposed.pagination.toOrderedExpressions
 import java.time.ZoneOffset.UTC
 import java.util.UUID
@@ -234,13 +236,13 @@ fun ExposedContentMetadataPersistence(db: Database) =
                 .toSet()
         }
 
-        override suspend fun sumTotalUploadedBytes(userId: User.Id): Long = ioTransaction(db = db) {
+        override suspend fun sumTotalUploadedData(userId: User.Id): MemorySize = ioTransaction(db = db) {
             val sumOfSizeInBytes = ContentMetadataTable.sizeInBytes.sum()
             ContentMetadataTable
                 .select(sumOfSizeInBytes)
                 .where { (ContentMetadataTable.userId eq userId.value) }
                 .map { it[sumOfSizeInBytes] ?: 0 }
-                .firstOrNull() ?: 0
+                .firstOrNull()?.bytes ?: 0.bytes
         }
 
         override suspend fun update(data: ContentMetadata.Edit): Either<DomainError, ContentMetadata> = either {

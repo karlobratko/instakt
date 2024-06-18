@@ -8,7 +8,7 @@ import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.RequestError.RequestCouldNotBeProcessed
 import hr.kbratko.instakt.domain.content.ContentService
 import hr.kbratko.instakt.domain.content.ContentService.Metadata
-import hr.kbratko.instakt.domain.eitherNel
+import hr.kbratko.instakt.domain.utility.eitherNel
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
 import hr.kbratko.instakt.domain.validation.ContentDescriptionIsValid

@@ -1,4 +1,4 @@
-package hr.kbratko.instakt.domain
+package hr.kbratko.instakt.domain.utility
 
 import arrow.core.Either
 import arrow.core.EitherNel

@@ -9,6 +9,7 @@ import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.pagination.Page
 import hr.kbratko.instakt.domain.persistence.pagination.Sort
+import hr.kbratko.instakt.domain.utility.MemorySize
 
 interface ContentMetadataPersistence {
     suspend fun insert(metadata: ContentMetadata.New): ContentMetadata
@@ -21,7 +22,7 @@ interface ContentMetadataPersistence {
 
     suspend fun selectNonProfile(userId: User.Id): Set<ContentMetadata>
 
-    suspend fun sumTotalUploadedBytes(userId: User.Id): Long
+    suspend fun sumTotalUploadedData(userId: User.Id): MemorySize
 
     suspend fun update(data: ContentMetadata.Edit): Either<DomainError, ContentMetadata>
 

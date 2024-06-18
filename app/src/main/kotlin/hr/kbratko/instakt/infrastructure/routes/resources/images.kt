@@ -9,7 +9,7 @@ import arrow.core.right
 import arrow.core.serialization.OptionSerializer
 import arrow.core.toNonEmptyListOrNone
 import hr.kbratko.instakt.domain.DbError.ContentNotFound
-import hr.kbratko.instakt.domain.InstantClosedRange
+import hr.kbratko.instakt.domain.utility.InstantClosedRange
 import hr.kbratko.instakt.domain.model.Content
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.User

@@ -1,6 +1,7 @@
 package hr.kbratko.instakt.infrastructure.routes.account.profile
 
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
+import hr.kbratko.instakt.domain.utility.MemorySize
 import hr.kbratko.instakt.infrastructure.ktor.principal
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
@@ -18,7 +19,7 @@ import org.koin.ktor.ext.inject
 @Resource("/plan")
 data class Plan(val parent: UserProfile = UserProfile()) {
     @Serializable data class Response(
-        val usedStorageInMegabytes: Double
+        val usedStorageInBytes: MemorySize
     )
 }
 
@@ -29,9 +30,8 @@ fun Route.plan() {
         jwt {
             get<Plan> {
                 val principal = call.principal<UserPrincipal>()
-                val usedStorageInMegabytes =
-                    contentMetadataPersistence.sumTotalUploadedBytes(principal.id).div(1024.0 * 1024.0)
-                Response.Success(Plan.Response(usedStorageInMegabytes), HttpStatusCode.OK)
+                val usedStorageInBytes = contentMetadataPersistence.sumTotalUploadedData(principal.id)
+                Response.Success(Plan.Response(usedStorageInBytes), HttpStatusCode.OK)
                     .let { call.respond(it.code, it) }
             }
         }

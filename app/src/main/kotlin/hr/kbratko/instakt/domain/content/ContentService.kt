@@ -13,15 +13,16 @@ import hr.kbratko.instakt.domain.DbError.UnsupportedContentType
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.content.ContentService.Metadata
-import hr.kbratko.instakt.domain.eitherNel
-import hr.kbratko.instakt.domain.getOrRaiseNel
+import hr.kbratko.instakt.domain.utility.eitherNel
+import hr.kbratko.instakt.domain.utility.getOrRaiseNel
 import hr.kbratko.instakt.domain.model.Content
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
 import hr.kbratko.instakt.domain.persistence.ContentPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
-import hr.kbratko.instakt.domain.toEitherNel
+import hr.kbratko.instakt.domain.utility.bytes
+import hr.kbratko.instakt.domain.utility.toEitherNel
 import hr.kbratko.instakt.domain.validation.ContentSizeIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import java.io.InputStream
@@ -148,11 +149,10 @@ fun ContentService(
         contentValue: ByteArray
     ) {
         val plan = userPersistence.selectPlan(userId).getOrRaiseNel { UserNotFound }
-        val totalUploadedBytes = contentMetadataPersistence.sumTotalUploadedBytes(userId)
-        val bytesAfterUpload = totalUploadedBytes + contentValue.size
-        println("Plan: $plan, totalUploadedBytes: $totalUploadedBytes, bytesAfterUpload: $bytesAfterUpload")
+        val totalUsedStorage = contentMetadataPersistence.sumTotalUploadedData(userId)
+        val usedStorageAfterUpload = totalUsedStorage + contentValue.size.bytes
 
-        ensure(plan.maxStorageInBytes >= bytesAfterUpload) { MaximumStorageForPlanExceeded.nel() }
+        ensure(plan.maxStorage >= usedStorageAfterUpload) { MaximumStorageForPlanExceeded.nel() }
     }
 
 }

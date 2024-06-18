@@ -27,7 +27,7 @@ object PlanSerializer : KSerializer<Plan> {
         val jsonObject = JsonObject(
             mapOf(
                 "name" to JsonPrimitive(value.name.lowercase()),
-                "maxStorageInMegabytes" to JsonPrimitive(value.maxStorageInMegabytes)
+                "maxStorageInBytes" to JsonPrimitive(value.maxStorage.bytes)
             )
         )
 

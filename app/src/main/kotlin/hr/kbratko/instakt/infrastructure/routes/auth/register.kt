@@ -7,7 +7,7 @@ import hr.kbratko.instakt.domain.DbError.UnknownRegistrationToken
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.ValidationError.RedirectUrlValidationError.InvalidRedirectUrlPattern
-import hr.kbratko.instakt.domain.eitherNel
+import hr.kbratko.instakt.domain.utility.eitherNel
 import hr.kbratko.instakt.domain.mailing.Email
 import hr.kbratko.instakt.domain.mailing.MailingService
 import hr.kbratko.instakt.domain.mailing.send

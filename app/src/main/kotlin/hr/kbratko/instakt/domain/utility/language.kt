@@ -1,4 +1,4 @@
-package hr.kbratko.instakt.domain
+package hr.kbratko.instakt.domain.utility
 
 import java.time.LocalTime
 import java.time.OffsetDateTime

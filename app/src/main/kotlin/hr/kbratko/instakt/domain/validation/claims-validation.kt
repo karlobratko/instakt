@@ -5,11 +5,11 @@ import hr.kbratko.instakt.domain.SecurityError
 import hr.kbratko.instakt.domain.SecurityError.TokenValidationError.MalformedSubject
 import hr.kbratko.instakt.domain.SecurityError.TokenValidationError.TokenExpired
 import hr.kbratko.instakt.domain.SecurityError.TokenValidationError.UnsupportedRoleClaim
-import hr.kbratko.instakt.domain.applyWrapEitherNel
+import hr.kbratko.instakt.domain.utility.applyWrapEitherNel
 import hr.kbratko.instakt.domain.config.RoundedInstantProvider
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.security.jwt.Claims
-import hr.kbratko.instakt.domain.toLongOrLeftNel
+import hr.kbratko.instakt.domain.utility.toLongOrLeftNel
 
 typealias SubjectValidationScope = ValidationScope<SecurityError, Claims.Subject>
 

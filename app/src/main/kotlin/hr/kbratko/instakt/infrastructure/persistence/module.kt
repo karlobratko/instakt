@@ -8,7 +8,7 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import hr.kbratko.instakt.domain.model.Content
-import hr.kbratko.instakt.domain.toDuration
+import hr.kbratko.instakt.domain.utility.toDuration
 import hr.kbratko.instakt.infrastructure.ktor.getBoolean
 import hr.kbratko.instakt.infrastructure.ktor.getInt
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedContentMetadataPersistence

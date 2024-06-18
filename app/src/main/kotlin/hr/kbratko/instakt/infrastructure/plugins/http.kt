@@ -1,6 +1,6 @@
 package hr.kbratko.instakt.infrastructure.plugins
 
-import hr.kbratko.instakt.domain.toDuration
+import hr.kbratko.instakt.domain.utility.toDuration
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.HttpHeaders.ContentType
 import io.ktor.http.HttpHeaders.XForwardedFor

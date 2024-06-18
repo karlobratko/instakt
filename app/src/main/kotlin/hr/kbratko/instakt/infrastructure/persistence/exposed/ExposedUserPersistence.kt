@@ -20,14 +20,14 @@ import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DbError.UsernameAlreadyExists
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.conversion.convert
-import hr.kbratko.instakt.domain.getOrRaise
+import hr.kbratko.instakt.domain.utility.getOrRaise
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.Plan
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
-import hr.kbratko.instakt.domain.toKotlinInstantOrNone
-import hr.kbratko.instakt.domain.toUUIDOrNone
+import hr.kbratko.instakt.domain.utility.toKotlinInstantOrNone
+import hr.kbratko.instakt.domain.utility.toUUIDOrNone
 import org.jetbrains.exposed.crypt.Encryptor
 import org.jetbrains.exposed.crypt.encryptedVarchar
 import org.jetbrains.exposed.dao.id.EntityID

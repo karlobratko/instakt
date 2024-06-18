@@ -23,7 +23,7 @@ import hr.kbratko.instakt.domain.ValidationError.UserValidationError.UsernameVal
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.UsernameValidationError.NonAlphanumericCharacterInUsername
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.UsernameValidationError.TooLongUsername
 import hr.kbratko.instakt.domain.ValidationError.UserValidationError.UsernameValidationError.TooShortUsername
-import hr.kbratko.instakt.domain.applyWrapEitherNel
+import hr.kbratko.instakt.domain.utility.applyWrapEitherNel
 import hr.kbratko.instakt.domain.model.User
 
 typealias UsernameValidationScope = ValidationScope<UsernameValidationError, String>

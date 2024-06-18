@@ -3,7 +3,7 @@ package hr.kbratko.instakt.infrastructure.security
 import hr.kbratko.instakt.domain.security.Security
 import hr.kbratko.instakt.domain.security.SecurityContext
 import hr.kbratko.instakt.domain.security.jwt.JwtTokenService
-import hr.kbratko.instakt.domain.toDuration
+import hr.kbratko.instakt.domain.utility.toDuration
 import hr.kbratko.instakt.infrastructure.security.cache.InMemoryTokenCache
 import hr.kbratko.instakt.infrastructure.security.cache.NoOpTokenCache
 import hr.kbratko.instakt.infrastructure.security.jwt.JwtAccessTokens

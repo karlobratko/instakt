@@ -2,7 +2,7 @@ package hr.kbratko.instakt.domain.model
 
 import arrow.core.Nel
 import arrow.core.Option
-import hr.kbratko.instakt.domain.InstantClosedRange
+import hr.kbratko.instakt.domain.utility.InstantClosedRange
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 

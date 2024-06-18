@@ -5,9 +5,9 @@ import arrow.core.left
 import arrow.core.raise.ensure
 import arrow.core.right
 import arrow.core.toNonEmptyListOrNone
-import hr.kbratko.instakt.domain.applyWrapEitherNel
-import hr.kbratko.instakt.domain.toEitherNel
-import hr.kbratko.instakt.domain.toUUIDOrNone
+import hr.kbratko.instakt.domain.utility.applyWrapEitherNel
+import hr.kbratko.instakt.domain.utility.toEitherNel
+import hr.kbratko.instakt.domain.utility.toUUIDOrNone
 import java.math.BigDecimal
 import kotlinx.datetime.Instant
 

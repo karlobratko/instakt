@@ -12,13 +12,13 @@ import hr.kbratko.instakt.domain.DbError.RegistrationTokenStillValid
 import hr.kbratko.instakt.domain.DbError.UnknownRegistrationToken
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.config.DefaultInstantProvider
-import hr.kbratko.instakt.domain.getOrRaise
+import hr.kbratko.instakt.domain.utility.getOrRaise
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.security.Token
-import hr.kbratko.instakt.domain.toKotlinInstant
-import hr.kbratko.instakt.domain.toKotlinInstantOrNone
-import hr.kbratko.instakt.domain.toUUIDOrNone
+import hr.kbratko.instakt.domain.utility.toKotlinInstant
+import hr.kbratko.instakt.domain.utility.toKotlinInstantOrNone
+import hr.kbratko.instakt.domain.utility.toUUIDOrNone
 import java.time.ZoneOffset.UTC
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant

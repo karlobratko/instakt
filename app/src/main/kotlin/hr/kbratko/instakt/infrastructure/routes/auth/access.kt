@@ -2,7 +2,7 @@ package hr.kbratko.instakt.infrastructure.routes.auth
 
 import arrow.core.raise.either
 import hr.kbratko.instakt.domain.DomainError
-import hr.kbratko.instakt.domain.eitherNel
+import hr.kbratko.instakt.domain.utility.eitherNel
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.SecurityContext

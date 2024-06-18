@@ -9,11 +9,11 @@ import hr.kbratko.instakt.domain.DbError.PasswordResetTokenStillValid
 import hr.kbratko.instakt.domain.DbError.UnknownPasswordResetToken
 import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.config.DefaultInstantProvider
-import hr.kbratko.instakt.domain.getOrRaise
+import hr.kbratko.instakt.domain.utility.getOrRaise
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.PasswordResetTokenPersistence
 import hr.kbratko.instakt.domain.security.Token
-import hr.kbratko.instakt.domain.toUUIDOrNone
+import hr.kbratko.instakt.domain.utility.toUUIDOrNone
 import java.time.ZoneOffset.UTC
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
