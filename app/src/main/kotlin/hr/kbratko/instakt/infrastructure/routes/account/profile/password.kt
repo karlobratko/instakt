@@ -7,6 +7,7 @@ import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.validation.PasswordIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.foldValidation
@@ -41,6 +42,7 @@ fun RequestValidationConfig.passwordValidation() {
 
 fun Route.password() {
     val userPersistence by inject<UserPersistence>()
+    val actionLogger by inject<ActionLogger>()
 
     restrictedRateLimit {
         jwt {
@@ -55,6 +57,8 @@ fun Route.password() {
                             User.Password(body.newPassword)
                         )
                     ).bind()
+
+                    actionLogger.logPasswordReset(principal.id)
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
         }

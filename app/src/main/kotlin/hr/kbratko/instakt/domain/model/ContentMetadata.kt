@@ -51,7 +51,7 @@ data class ContentMetadata(
     class Filter(
         val username: Option<User.Username>,
         val description: Option<Description>,
-        val uploadedAtBetween: Option<InstantClosedRange>,
+        val uploadedBetween: Option<InstantClosedRange>,
         val tags: Option<Nel<Tag>>,
     )
 

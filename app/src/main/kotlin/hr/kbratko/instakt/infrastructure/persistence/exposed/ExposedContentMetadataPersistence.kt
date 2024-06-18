@@ -146,7 +146,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
                         filter.description.onSome {
                             andWhere { ContentMetadataTable.description like "%${it.value}%" }
                         }
-                        filter.uploadedAtBetween.onSome {
+                        filter.uploadedBetween.onSome {
                             andWhere {
                                 ContentMetadataTable.uploadedAt.between(
                                     it.start.toJavaInstant().atOffset(UTC),

@@ -63,6 +63,10 @@ sealed interface DbError : DomainError {
     data object UnsupportedContentType : DbError
 
     data object MaximumStorageForPlanExceeded : DbError
+
+    data object RequestedPlanAlreadyActive : DbError
+
+    data object PlanHoldPeriodNotExceeded : DbError
 }
 
 sealed interface SecurityError : DomainError {

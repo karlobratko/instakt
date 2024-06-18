@@ -15,6 +15,7 @@ import hr.kbratko.instakt.domain.validation.EmailIsValid
 import hr.kbratko.instakt.domain.validation.PasswordIsValid
 import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
 import hr.kbratko.instakt.domain.validation.validate
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.mailing.Senders
 import hr.kbratko.instakt.infrastructure.mailing.templates.ResetPassword
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -67,6 +68,7 @@ fun Route.passwordReset() {
     val passwordResetTokenPersistence by inject<PasswordResetTokenPersistence>()
     val senders by inject<Senders>()
     val mailingService by inject<MailingService>()
+    val actionLogger by inject<ActionLogger>()
 
     restrictedRateLimit {
         post<PasswordReset.Acquire, PasswordReset.Acquire.Body> { _, body ->
@@ -101,6 +103,8 @@ fun Route.passwordReset() {
                 ).bind()
 
                 passwordResetTokenPersistence.delete(token).bind()
+
+                actionLogger.logPasswordReset(userId)
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
         }
     }

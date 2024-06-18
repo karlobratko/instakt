@@ -74,6 +74,15 @@ CREATE TABLE password_reset_tokens
     expires_at              TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+CREATE TABLE audit_log
+(
+    audit_log_pk      UUID PRIMARY KEY,
+    user_fk           BIGINT                   NOT NULL,
+    action            SMALLINT                 NOT NULL,
+    affected_resource SMALLINT                 NOT NULL,
+    executed_at       TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
 ALTER TABLE users
     ADD FOREIGN KEY (profile_picture_fk) REFERENCES content_metadata (content_metadata_pk);
 
@@ -96,4 +105,7 @@ ALTER TABLE refresh_tokens
     ADD FOREIGN KEY (user_fk) REFERENCES users (user_pk) ON DELETE CASCADE;
 
 ALTER TABLE password_reset_tokens
+    ADD FOREIGN KEY (user_fk) REFERENCES users (user_pk) ON DELETE CASCADE;
+
+ALTER TABLE audit_log
     ADD FOREIGN KEY (user_fk) REFERENCES users (user_pk) ON DELETE CASCADE;

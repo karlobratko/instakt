@@ -9,6 +9,7 @@ import hr.kbratko.instakt.domain.validation.FirstNameIsValid
 import hr.kbratko.instakt.domain.validation.LastNameIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -49,6 +50,7 @@ fun RequestValidationConfig.userProfileValidation() {
 
 fun Route.profile() {
     val userPersistence by inject<UserPersistence>()
+    val actionLogger by inject<ActionLogger>()
 
     social()
     password()
@@ -79,7 +81,7 @@ fun Route.profile() {
                             User.LastName(body.lastName),
                             User.Bio(body.bio)
                         )
-                    ).bind()
+                    ).bind().also { actionLogger.logUserUpdate(principal.id) }
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
         }

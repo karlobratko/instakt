@@ -7,6 +7,7 @@ import hr.kbratko.instakt.domain.validation.PlatformIsValid
 import hr.kbratko.instakt.domain.validation.UrlIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -62,6 +63,7 @@ fun RequestValidationConfig.socialValidation() {
 
 fun Route.social() {
     val socialMediaLinkPersistence by inject<SocialMediaLinkPersistence>()
+    val actionLogger by inject<ActionLogger>()
 
     permissiveRateLimit {
         jwt {
@@ -87,7 +89,7 @@ fun Route.social() {
                             SocialMediaLink.Platform(body.platform),
                             SocialMediaLink.Url(body.url)
                         )
-                    ).bind()
+                    ).bind().also { actionLogger.logSocialMediaLinkCreation(principal.id) }
                 }.toResponse(HttpStatusCode.Created).let { call.respond(it.code, it) }
             }
 
@@ -101,7 +103,7 @@ fun Route.social() {
                             SocialMediaLink.Platform(body.platform),
                             SocialMediaLink.Url(body.url)
                         )
-                    ).bind()
+                    ).bind().also { actionLogger.logSocialMediaLinkUpdate(principal.id) }
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
 
@@ -114,6 +116,8 @@ fun Route.social() {
                             principal.id
                         )
                     ).bind()
+
+                    actionLogger.logSocialMediaLinkDeletion(principal.id)
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
         }

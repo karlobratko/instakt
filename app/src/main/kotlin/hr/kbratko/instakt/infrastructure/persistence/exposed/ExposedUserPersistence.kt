@@ -5,6 +5,7 @@ import arrow.core.Either.Companion.catchOrThrow
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.core.firstOrNone
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.raise.either
@@ -15,17 +16,21 @@ import arrow.core.toOption
 import hr.kbratko.instakt.domain.DbError.EmailAlreadyExists
 import hr.kbratko.instakt.domain.DbError.InvalidPassword
 import hr.kbratko.instakt.domain.DbError.InvalidUsernameOrPassword
+import hr.kbratko.instakt.domain.DbError.PlanHoldPeriodNotExceeded
 import hr.kbratko.instakt.domain.DbError.RegistrationTokenNotConfirmed
+import hr.kbratko.instakt.domain.DbError.RequestedPlanAlreadyActive
 import hr.kbratko.instakt.domain.DbError.UserNotFound
 import hr.kbratko.instakt.domain.DbError.UsernameAlreadyExists
 import hr.kbratko.instakt.domain.DomainError
+import hr.kbratko.instakt.domain.config.DefaultInstantProvider
 import hr.kbratko.instakt.domain.conversion.convert
-import hr.kbratko.instakt.domain.utility.getOrRaise
 import hr.kbratko.instakt.domain.model.ContentMetadata
 import hr.kbratko.instakt.domain.model.Plan
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
+import hr.kbratko.instakt.domain.utility.getOrRaise
+import hr.kbratko.instakt.domain.utility.toKotlinInstant
 import hr.kbratko.instakt.domain.utility.toKotlinInstantOrNone
 import hr.kbratko.instakt.domain.utility.toUUIDOrNone
 import org.jetbrains.exposed.crypt.Encryptor
@@ -36,12 +41,14 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SortOrder.DESC
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.postgresql.util.PSQLState.UNIQUE_VIOLATION
+import kotlin.time.Duration
 import org.jetbrains.exposed.sql.ReferenceOption.CASCADE as Cascade
 import org.jetbrains.exposed.sql.SchemaUtils.create as createIfNotExists
 import org.springframework.security.crypto.bcrypt.BCrypt.checkpw as comparePassword
@@ -107,7 +114,9 @@ val profileSelection = TableSelection(
     )
 }
 
-fun ExposedUserPersistence(db: Database) =
+data class UserPersistenceConfig(val planHoldDuration: Duration)
+
+fun ExposedUserPersistence(db: Database, config: UserPersistenceConfig) =
     object : UserPersistence {
         init {
             transaction {
@@ -197,8 +206,7 @@ fun ExposedUserPersistence(db: Database) =
                 .select(profileSelection.columns)
                 .where { UsersTable.id eq id.value }
                 .orderBy(PlansTable.changedAt, DESC)
-                .limit(1)
-                .singleOrNone()
+                .firstOrNone()
                 .map { it.convert(profileSelection.conversion) }
         }
 
@@ -207,8 +215,7 @@ fun ExposedUserPersistence(db: Database) =
                 .select(PlansTable.plan)
                 .where { PlansTable.userId eq id.value }
                 .orderBy(PlansTable.changedAt, DESC)
-                .limit(1)
-                .singleOrNone()
+                .firstOrNone()
                 .map { it[PlansTable.plan] }
         }
 
@@ -228,8 +235,7 @@ fun ExposedUserPersistence(db: Database) =
                     .select(profileSelection.columns)
                     .where { UsersTable.id eq data.id.value }
                     .orderBy(PlansTable.changedAt, DESC)
-                    .limit(1)
-                    .single()
+                    .first()
                     .convert(profileSelection.conversion)
             }
         }
@@ -265,16 +271,21 @@ fun ExposedUserPersistence(db: Database) =
 
         override suspend fun update(data: User.ChangePlan): Either<DomainError, Unit> = either {
             ioTransaction(db = db) {
-                val planId = PlansTable.insertAndGetId {
+                val (currentPlan, changedAt) = PlansTable
+                    .select(PlansTable.plan, PlansTable.changedAt)
+                    .where { PlansTable.userId eq data.id.value }
+                    .orderBy(PlansTable.changedAt, DESC)
+                    .firstOrNone()
+                    .map { it[PlansTable.plan] to it[PlansTable.changedAt].toKotlinInstant() }
+                    .getOrRaise { UserNotFound }
+
+                ensure(currentPlan != data.plan) { RequestedPlanAlreadyActive }
+                ensure(DefaultInstantProvider.now() - changedAt >= config.planHoldDuration) { PlanHoldPeriodNotExceeded }
+
+                PlansTable.insert {
                     it[userId] = data.id.value
                     it[plan] = data.plan
                 }
-
-                (UsersTable innerJoin PlansTable)
-                    .select(userSelection.columns)
-                    .where { (UsersTable.id eq data.id.value) and (PlansTable.id eq planId) }
-                    .single()
-                    .convert(userSelection.conversion)
             }
         }
     }

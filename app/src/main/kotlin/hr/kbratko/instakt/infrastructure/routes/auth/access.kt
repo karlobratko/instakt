@@ -11,6 +11,7 @@ import hr.kbratko.instakt.domain.security.jwt.JwtTokenService
 import hr.kbratko.instakt.domain.validation.PasswordIsValid
 import hr.kbratko.instakt.domain.validation.UsernameIsValid
 import hr.kbratko.instakt.domain.validation.validate
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
 import hr.kbratko.instakt.infrastructure.routes.foldValidation
 import hr.kbratko.instakt.infrastructure.routes.toResponse
@@ -56,14 +57,16 @@ fun RequestValidationConfig.accessValidation() {
 fun Route.access() {
     val userPersistence by inject<UserPersistence>()
     val jwtTokenService by inject<JwtTokenService>()
+    val actionLogger by inject<ActionLogger>()
 
     restrictedRateLimit {
         post<Access.Acquire, Access.Acquire.Body> { _, body ->
             either {
-                val user =
-                    userPersistence.select(User.Username(body.username), User.Password(body.password)).bind()
+                val user = userPersistence.select(User.Username(body.username), User.Password(body.password)).bind()
 
                 val (refreshToken, accessToken) = jwtTokenService.generate(SecurityContext(user.id, user.role)).bind()
+
+                actionLogger.logUserLogin(user.id)
 
                 Access.Response(accessToken, refreshToken)
             }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }

@@ -23,6 +23,7 @@ import hr.kbratko.instakt.domain.validation.PasswordIsValid
 import hr.kbratko.instakt.domain.validation.StringMatchingPatternValidation
 import hr.kbratko.instakt.domain.validation.UsernameIsValid
 import hr.kbratko.instakt.domain.validation.validate
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.mailing.Senders
 import hr.kbratko.instakt.infrastructure.mailing.templates.ConfirmRegistration
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -105,6 +106,7 @@ fun Route.register() {
     val registrationTokenPersistence by inject<RegistrationTokenPersistence>()
     val senders by inject<Senders>()
     val mailingService by inject<MailingService>()
+    val actionLogger by inject<ActionLogger>()
 
     val sendConfirmRegistrationEmail: suspend (User, Token.Register, String) -> Either<DomainError, Email> =
         { user, registrationToken, redirectUrl ->
@@ -136,6 +138,8 @@ fun Route.register() {
                 val registrationToken = registrationTokenPersistence.insert(user.id).toEitherNel().bind()
 
                 sendConfirmRegistrationEmail(user, registrationToken, body.redirectUrl).toEitherNel().bind()
+
+                actionLogger.logUserRegistration(user.id)
             }.toResponse(HttpStatusCode.Created).let { call.respond(it.code, it) }
         }
 

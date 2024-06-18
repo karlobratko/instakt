@@ -11,6 +11,7 @@ import hr.kbratko.instakt.domain.content.ContentService
 import hr.kbratko.instakt.domain.utility.eitherNel
 import hr.kbratko.instakt.domain.persistence.ContentMetadataPersistence
 import hr.kbratko.instakt.infrastructure.ktor.principal
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -37,6 +38,7 @@ data class Profile(val parent: Images = Images())
 fun Route.profile() {
     val contentMetadataPersistence by inject<ContentMetadataPersistence>()
     val contentService by inject<ContentService>()
+    val actionLogger by inject<ActionLogger>()
 
     permissiveRateLimit {
         jwt {
@@ -73,6 +75,7 @@ fun Route.profile() {
                         }
 
                         contentService.uploadProfilePhoto(principal.id, imageStream).bind()
+                            .also { actionLogger.logProfilePictureUpdate(it.user.id) }
                     }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
                 }
             }
@@ -81,6 +84,8 @@ fun Route.profile() {
                 either<DomainError, Unit> {
                     val principal = call.principal<UserPrincipal>()
                     contentService.deleteProfilePhoto(principal.id).bind()
+
+                    actionLogger.logProfilePictureDeletion(principal.id)
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
         }

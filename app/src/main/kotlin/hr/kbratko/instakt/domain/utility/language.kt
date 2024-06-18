@@ -11,6 +11,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
@@ -35,6 +38,14 @@ import kotlin.Int.Companion.MAX_VALUE as Max
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE as ExactlyOnce
 import kotlin.time.Duration.Companion.INFINITE as Infinite
 import kotlin.time.Duration.Companion.ZERO as Zero
+
+typealias Broker<T> = MutableSharedFlow<T>
+
+typealias Emitter<T> = FlowCollector<T>
+
+typealias Collector<T> = SharedFlow<T>
+
+fun <T> Broker() = MutableSharedFlow<T>()
 
 fun String.toDuration() = Duration.parse(this)
 

@@ -15,6 +15,7 @@ import hr.kbratko.instakt.domain.validation.ContentDescriptionIsValid
 import hr.kbratko.instakt.domain.validation.ContentTagsAreValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.ktor.principal
+import hr.kbratko.instakt.infrastructure.logging.ActionLogger
 import hr.kbratko.instakt.infrastructure.plugins.jwt
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.plugins.restrictedRateLimit
@@ -79,6 +80,7 @@ fun RequestValidationConfig.profileImagesValidation() {
 fun Route.images() {
     val contentMetadataPersistence by inject<ContentMetadataPersistence>()
     val contentService by inject<ContentService>()
+    val actionLogger by inject<ActionLogger>()
 
     profile()
 
@@ -127,7 +129,7 @@ fun Route.images() {
                                 ContentMetadata.Description(metadata.description),
                                 metadata.tags.map { ContentMetadata.Tag(it) }
                             )
-                        ).bind()
+                        ).bind().also { actionLogger.logContentCreation(it.user.id) }
                     }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
                 }
             }
@@ -142,14 +144,17 @@ fun Route.images() {
                             ContentMetadata.Description(body.description),
                             body.tags.map { ContentMetadata.Tag(it) }
                         )
-                    ).bind()
+                    ).bind().also { actionLogger.logContentUpdate(it.user.id) }
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
 
             delete<Images.Id> { resource ->
                 either<DomainError, Unit> {
                     val principal = call.principal<UserPrincipal>()
-                    contentService.delete(principal.id, ContentMetadata.Id(resource.id)).bind()
+                    val contentMetadataId = ContentMetadata.Id(resource.id)
+                    contentService.delete(principal.id, contentMetadataId).bind()
+
+                    actionLogger.logContentDeletion(principal.id)
                 }.toResponse(HttpStatusCode.OK).let { call.respond(it.code, it) }
             }
         }

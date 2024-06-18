@@ -86,7 +86,9 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.PaginationValidationError.CountValidation.TooBigPageCount,
         ValidationError.PaginationValidationError.CountValidation.NegativePageCount,
         ValidationError.PaginationValidationError.PageNumberValidation.NegativePageNumber,
-        DbError.MaximumStorageForPlanExceeded -> BadRequest
+        DbError.MaximumStorageForPlanExceeded,
+        DbError.PlanHoldPeriodNotExceeded,
+        DbError.RequestedPlanAlreadyActive -> BadRequest
 
         // NotFound
         DbError.InvalidRefreshToken,
@@ -112,5 +114,6 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
 
         // TooManyRequests
         EndpointRequestLimitMet -> TooManyRequests
+
     }
 }

@@ -11,6 +11,7 @@ import hr.kbratko.instakt.domain.model.Content
 import hr.kbratko.instakt.domain.utility.toDuration
 import hr.kbratko.instakt.infrastructure.ktor.getBoolean
 import hr.kbratko.instakt.infrastructure.ktor.getInt
+import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedAuditLogPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedContentMetadataPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedPasswordResetTokenPersistence
 import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedRefreshTokenPersistence
@@ -20,6 +21,7 @@ import hr.kbratko.instakt.infrastructure.persistence.exposed.ExposedUserPersiste
 import hr.kbratko.instakt.infrastructure.persistence.exposed.PasswordResetTokenPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.exposed.RefreshTokenPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.exposed.RegistrationTokenPersistenceConfig
+import hr.kbratko.instakt.infrastructure.persistence.exposed.UserPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.s3.ContentPersistenceConfig
 import hr.kbratko.instakt.infrastructure.persistence.s3.S3ContentPersistence
 import hr.kbratko.instakt.infrastructure.serialization.Resources
@@ -36,6 +38,7 @@ fun Application.PersistenceModule() =
         val db = environment.config.config("db")
         val s3 = environment.config.config("s3")
         val auth = environment.config.config("auth")
+        val plan = environment.config.config("plan")
 
         single(createdAtStart = true) {
             val secrets: DatabaseCredentialsConfig = Resources.hocon("secrets/db.dev.conf")
@@ -114,9 +117,15 @@ fun Application.PersistenceModule() =
             )
         }
 
+        single(createdAtStart = true) {
+            UserPersistenceConfig(
+                plan.property("hold").getString().toDuration()
+            )
+        }
+
         single { ExposedRegistrationTokenPersistence(get(), get()) }
 
-        single { ExposedUserPersistence(get()) }
+        single { ExposedUserPersistence(get(), get()) }
 
         single { ExposedRefreshTokenPersistence(get(), get()) }
 
@@ -127,4 +136,6 @@ fun Application.PersistenceModule() =
         single { S3ContentPersistence(get(), get()) }
 
         single { ExposedContentMetadataPersistence(get()) }
+
+        single { ExposedAuditLogPersistence(get()) }
     }
