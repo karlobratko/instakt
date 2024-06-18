@@ -1,6 +1,7 @@
 package hr.kbratko.instakt.infrastructure
 
 import hr.kbratko.instakt.infrastructure.jobs.jobs
+import hr.kbratko.instakt.infrastructure.persistence.prepopulateDatabase
 import hr.kbratko.instakt.infrastructure.plugins.installPlugins
 import hr.kbratko.instakt.infrastructure.routes.configureRoutes
 import io.ktor.server.application.Application
@@ -12,4 +13,8 @@ fun Application.module() {
     installPlugins()
     configureRoutes()
     jobs()
+
+    if (environment.developmentMode) {
+        prepopulateDatabase()
+    }
 }

@@ -280,7 +280,9 @@ fun ExposedUserPersistence(db: Database, config: UserPersistenceConfig) =
                     .getOrRaise { UserNotFound }
 
                 ensure(currentPlan != data.plan) { RequestedPlanAlreadyActive }
-                ensure(DefaultInstantProvider.now() - changedAt >= config.planHoldDuration) { PlanHoldPeriodNotExceeded }
+                if (currentPlan != Plan.Free) {
+                    ensure(DefaultInstantProvider.now() - changedAt >= config.planHoldDuration) { PlanHoldPeriodNotExceeded }
+                }
 
                 PlansTable.insert {
                     it[userId] = data.id.value

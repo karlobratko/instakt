@@ -1,0 +1,21 @@
+###
+POST http://localhost:8080/api/v1/admin/logs
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "filter": {
+    "userId": null,
+    "action": "Register",
+    "affectedResource": null,
+    "executedBetween": null
+  },
+  "page": {
+    "number": 0,
+    "count": 10
+  },
+  "sort": {
+    "by": "executedAt",
+    "order": "asc"
+  }
+}

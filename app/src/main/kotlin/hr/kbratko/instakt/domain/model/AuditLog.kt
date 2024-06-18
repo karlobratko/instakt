@@ -3,7 +3,9 @@ package hr.kbratko.instakt.domain.model
 import arrow.core.Option
 import hr.kbratko.instakt.domain.utility.InstantClosedRange
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class AuditLog(
     val id: Id,
     val userId: User.Id,
@@ -24,8 +26,9 @@ data class AuditLog(
         val executedBetween: Option<InstantClosedRange>
     )
 
-    @JvmInline value class Id(val value: String)
+    @Serializable @JvmInline value class Id(val value: String)
 
+    @Serializable
     enum class Action {
         Register,
         Login,
@@ -35,6 +38,7 @@ data class AuditLog(
         Delete
     }
 
+    @Serializable
     enum class Resource {
         Content,
         Password,

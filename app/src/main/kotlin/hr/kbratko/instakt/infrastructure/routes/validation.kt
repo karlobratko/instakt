@@ -7,6 +7,7 @@ import hr.kbratko.instakt.infrastructure.routes.account.profile.images.profileIm
 import hr.kbratko.instakt.infrastructure.routes.account.profile.passwordValidation
 import hr.kbratko.instakt.infrastructure.routes.account.profile.socialValidation
 import hr.kbratko.instakt.infrastructure.routes.account.profile.userProfileValidation
+import hr.kbratko.instakt.infrastructure.routes.admin.logsValidation
 import hr.kbratko.instakt.infrastructure.routes.auth.accessValidation
 import hr.kbratko.instakt.infrastructure.routes.auth.registerValidation
 import hr.kbratko.instakt.infrastructure.routes.resources.imagesValidation
@@ -32,5 +33,6 @@ fun Routing.validation() {
         passwordResetValidation()
         socialValidation()
         imagesValidation()
+        logsValidation()
     }
 }

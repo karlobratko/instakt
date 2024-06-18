@@ -1,6 +1,7 @@
 package hr.kbratko.instakt.infrastructure.routes
 
 import hr.kbratko.instakt.infrastructure.routes.account.account
+import hr.kbratko.instakt.infrastructure.routes.admin.admin
 import hr.kbratko.instakt.infrastructure.routes.auth.auth
 import hr.kbratko.instakt.infrastructure.routes.resources.resources
 import io.ktor.resources.Resource
@@ -23,5 +24,6 @@ fun Application.configureRoutes() {
         auth()
         account()
         resources()
+        admin()
     }
 }

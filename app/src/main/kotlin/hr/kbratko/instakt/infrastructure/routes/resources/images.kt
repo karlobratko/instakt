@@ -19,7 +19,7 @@ import hr.kbratko.instakt.domain.persistence.pagination.Page
 import hr.kbratko.instakt.domain.persistence.pagination.Sort
 import hr.kbratko.instakt.domain.validation.ContentSortTermIsValid
 import hr.kbratko.instakt.domain.validation.PaginationIsValid
-import hr.kbratko.instakt.domain.validation.UploadRangeIsValid
+import hr.kbratko.instakt.domain.validation.InstantRangeIsValid
 import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.routes.Response
@@ -65,7 +65,7 @@ fun RequestValidationConfig.imagesValidation() {
                     .fold(
                         ifEmpty = { request.right() },
                         ifSome = {
-                            it.validate(UploadRangeIsValid)
+                            it.validate(InstantRangeIsValid)
                         }
                     )
             }

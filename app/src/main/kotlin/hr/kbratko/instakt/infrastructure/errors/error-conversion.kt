@@ -82,13 +82,14 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.ContentValidationError.ContentTagsValidationError.TooShortContentTagName,
         ValidationError.ContentValidationError.ContentSizeValidationError.MaxContentSizeExceeded,
         ValidationError.ContentValidationError.ContentSortTermError.UnsupportedSortTerm,
-        ValidationError.ContentValidationError.ContentUploadRangeError.StartDateIsAfterEndDate,
         ValidationError.PaginationValidationError.CountValidation.TooBigPageCount,
         ValidationError.PaginationValidationError.CountValidation.NegativePageCount,
         ValidationError.PaginationValidationError.PageNumberValidation.NegativePageNumber,
         DbError.MaximumStorageForPlanExceeded,
         DbError.PlanHoldPeriodNotExceeded,
-        DbError.RequestedPlanAlreadyActive -> BadRequest
+        DbError.RequestedPlanAlreadyActive,
+        ValidationError.AuditLogValidationError.AuditLogSortTermError.UnsupportedSortTerm,
+        ValidationError.CommonValidationError.InstantRangeError.StartDateIsAfterEndDate -> BadRequest
 
         // NotFound
         DbError.InvalidRefreshToken,
@@ -114,6 +115,5 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
 
         // TooManyRequests
         EndpointRequestLimitMet -> TooManyRequests
-
     }
 }

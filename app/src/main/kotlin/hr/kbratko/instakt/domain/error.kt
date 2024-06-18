@@ -177,12 +177,20 @@ sealed interface ValidationError : DomainError {
             data object MaxContentSizeExceeded : ContentSizeValidationError
         }
 
-        sealed interface ContentUploadRangeError : ContentValidationError {
-            data object StartDateIsAfterEndDate : ContentUploadRangeError
-        }
-
         sealed interface ContentSortTermError : ContentValidationError {
             data object UnsupportedSortTerm : ContentSortTermError
+        }
+    }
+
+    sealed interface AuditLogValidationError : ValidationError {
+        sealed interface AuditLogSortTermError : AuditLogValidationError {
+            data object UnsupportedSortTerm : AuditLogSortTermError
+        }
+    }
+
+    sealed interface CommonValidationError : ValidationError {
+        sealed interface InstantRangeError : CommonValidationError {
+            data object StartDateIsAfterEndDate : InstantRangeError
         }
     }
 }
