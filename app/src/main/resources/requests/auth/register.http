@@ -8,7 +8,8 @@ Content-Type: application/json
   "firstName": "Karlo",
   "lastName": "Bratko",
   "password": "Pa$$w0rd",
-  "redirectUrl": "http://localhost:3000/confirm-registration"
+  "redirectUrl": "http://localhost:3000/confirm-registration",
+  "plan": "free"
 }
 
 ###

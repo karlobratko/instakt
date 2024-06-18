@@ -1,5 +1,6 @@
 package hr.kbratko.instakt.domain
 
+import java.time.LocalTime
 import java.time.OffsetDateTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -40,6 +41,10 @@ fun String.toDuration() = Duration.parse(this)
 fun OffsetDateTime.toKotlinInstant() = toInstant().toKotlinInstant()
 
 fun Instant.toLocalDate(timeZone: TimeZone) = toLocalDateTime(timeZone).date
+
+fun java.time.LocalDateTime.withTimeAtStartOfDay(): java.time.LocalDateTime {
+    return this.with(LocalTime.MIN)
+}
 
 @Serializable data class InstantClosedRange(
     override val start: Instant,

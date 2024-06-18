@@ -1,0 +1,4 @@
+###
+GET http://localhost:8080/api/v1/account/user/plan
+Content-Type: application/json
+Authorization: Bearer {{access_token}}

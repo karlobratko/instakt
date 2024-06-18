@@ -13,6 +13,6 @@ fun Application.ContentModule() =
         }
 
         single {
-            ContentService(get(), get(), get())
+            ContentService(get(), get(), get(), get())
         }
     }

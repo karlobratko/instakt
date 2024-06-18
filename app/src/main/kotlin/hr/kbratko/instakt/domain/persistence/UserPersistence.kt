@@ -3,6 +3,7 @@ package hr.kbratko.instakt.domain.persistence
 import arrow.core.Either
 import arrow.core.Option
 import hr.kbratko.instakt.domain.DomainError
+import hr.kbratko.instakt.domain.model.Plan
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.model.User.Password
 import hr.kbratko.instakt.domain.model.User.Username
@@ -19,6 +20,8 @@ interface UserPersistence {
 
     suspend fun selectProfile(id: User.Id): Option<User.Profile>
 
+    suspend fun selectPlan(id: User.Id): Option<Plan>
+
     suspend fun select(username: Username, password: Password): Either<DomainError, User>
 
     suspend fun update(data: User.Edit): Either<DomainError, User.Profile>
@@ -26,4 +29,6 @@ interface UserPersistence {
     suspend fun update(data: User.ChangePassword): Either<DomainError, Unit>
 
     suspend fun update(data: User.ResetPassword): Either<DomainError, Unit>
+
+    suspend fun update(data: User.ChangePlan): Either<DomainError, Unit>
 }

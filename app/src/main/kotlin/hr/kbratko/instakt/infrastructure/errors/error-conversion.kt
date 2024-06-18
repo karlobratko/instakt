@@ -85,7 +85,8 @@ val ErrorToHttpStatusCodeConversion = ErrorToHttpStatusCodeConversionScope {
         ValidationError.ContentValidationError.ContentUploadRangeError.StartDateIsAfterEndDate,
         ValidationError.PaginationValidationError.CountValidation.TooBigPageCount,
         ValidationError.PaginationValidationError.CountValidation.NegativePageCount,
-        ValidationError.PaginationValidationError.PageNumberValidation.NegativePageNumber -> BadRequest
+        ValidationError.PaginationValidationError.PageNumberValidation.NegativePageNumber,
+        DbError.MaximumStorageForPlanExceeded -> BadRequest
 
         // NotFound
         DbError.InvalidRefreshToken,

@@ -43,6 +43,7 @@ import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
+import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.ReferenceOption.CASCADE as Cascade
@@ -52,7 +53,7 @@ object ContentMetadataTable : UUIDTable("content_metadata", "content_metadata_pk
     val userId = reference("user_fk", UsersTable, onDelete = Cascade)
     val path = varchar("path", 256)
     val contentType = enumeration<Content.Type>("content_type")
-    val sizeInBytes = integer("size_bytes")
+    val sizeInBytes = long("size_bytes")
     val description = varchar("description", 1024).default("")
     val uploadedAt = timestampWithTimeZone("uploaded_at").defaultExpression(CurrentTimestamp())
 }
@@ -99,7 +100,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
                 it[userId] = metadata.userId.value
                 it[path] = metadata.contentId.value
                 it[contentType] = metadata.type
-                it[sizeInBytes] = metadata.size.value
+                it[sizeInBytes] = metadata.size.value.toLong()
                 it[description] = metadata.description.value
             }
 
@@ -233,6 +234,15 @@ fun ExposedContentMetadataPersistence(db: Database) =
                 .toSet()
         }
 
+        override suspend fun sumTotalUploadedBytes(userId: User.Id): Long = ioTransaction(db = db) {
+            val sumOfSizeInBytes = ContentMetadataTable.sizeInBytes.sum()
+            ContentMetadataTable
+                .select(sumOfSizeInBytes)
+                .where { (ContentMetadataTable.userId eq userId.value) }
+                .map { it[sumOfSizeInBytes] ?: 0 }
+                .firstOrNull() ?: 0
+        }
+
         override suspend fun update(data: ContentMetadata.Edit): Either<DomainError, ContentMetadata> = either {
             ioTransaction(db = db) {
                 val contentMetadataId = toUUID(data.id)
@@ -296,7 +306,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
                     it[userId] = metadata.userId.value
                     it[path] = metadata.contentId.value
                     it[contentType] = metadata.type
-                    it[sizeInBytes] = metadata.size.value
+                    it[sizeInBytes] = metadata.size.value.toLong()
                 }
                 .also { id ->
                     UsersTable.update({ UsersTable.id eq metadata.userId.value }) {

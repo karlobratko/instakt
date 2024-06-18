@@ -61,6 +61,8 @@ sealed interface DbError : DomainError {
     data object ProfilePictureMetadataNotFound : DbError
 
     data object UnsupportedContentType : DbError
+
+    data object MaximumStorageForPlanExceeded : DbError
 }
 
 sealed interface SecurityError : DomainError {

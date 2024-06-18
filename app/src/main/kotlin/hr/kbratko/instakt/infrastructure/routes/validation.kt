@@ -9,7 +9,7 @@ import hr.kbratko.instakt.infrastructure.routes.account.profile.socialValidation
 import hr.kbratko.instakt.infrastructure.routes.account.profile.userProfileValidation
 import hr.kbratko.instakt.infrastructure.routes.auth.accessValidation
 import hr.kbratko.instakt.infrastructure.routes.auth.registerValidation
-import hr.kbratko.instakt.infrastructure.routes.resources.images.imagesValidation
+import hr.kbratko.instakt.infrastructure.routes.resources.imagesValidation
 import io.ktor.server.application.install
 import io.ktor.server.plugins.requestvalidation.RequestValidation
 import io.ktor.server.plugins.requestvalidation.ValidationResult.Invalid

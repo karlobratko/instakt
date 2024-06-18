@@ -22,6 +22,7 @@ import hr.kbratko.instakt.domain.DomainError
 import hr.kbratko.instakt.domain.conversion.convert
 import hr.kbratko.instakt.domain.getOrRaise
 import hr.kbratko.instakt.domain.model.ContentMetadata
+import hr.kbratko.instakt.domain.model.Plan
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.UserPersistence
 import hr.kbratko.instakt.domain.security.Token
@@ -33,10 +34,15 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SortOrder.DESC
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
+import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.postgresql.util.PSQLState.UNIQUE_VIOLATION
+import org.jetbrains.exposed.sql.ReferenceOption.CASCADE as Cascade
 import org.jetbrains.exposed.sql.SchemaUtils.create as createIfNotExists
 import org.springframework.security.crypto.bcrypt.BCrypt.checkpw as comparePassword
 import org.springframework.security.crypto.bcrypt.BCrypt.gensalt as generateSalt
@@ -61,6 +67,12 @@ object UsersTable : LongIdTable("users", "user_pk") {
     val role = enumeration<User.Role>("role")
 }
 
+object PlansTable : LongIdTable("user_plans", "user_plan_pk") {
+    val userId = reference("user_fk", UsersTable.id, onDelete = Cascade)
+    val plan = enumeration<Plan>("plan")
+    val changedAt = timestampWithTimeZone("changed_at").defaultExpression(CurrentTimestamp())
+}
+
 val userSelection = TableSelection(
     UsersTable.id,
     UsersTable.username,
@@ -81,7 +93,8 @@ val profileSelection = TableSelection(
     UsersTable.firstName,
     UsersTable.lastName,
     UsersTable.bio,
-    UsersTable.profilePictureId
+    UsersTable.profilePictureId,
+    PlansTable.plan
 ) {
     User.Profile(
         User.Username(this[UsersTable.username]),
@@ -89,7 +102,8 @@ val profileSelection = TableSelection(
         User.FirstName(this[UsersTable.firstName]),
         User.LastName(this[UsersTable.lastName]),
         User.Bio(this[UsersTable.bio]),
-        this[UsersTable.profilePictureId].toOption().map { ContentMetadata.Id(it.value.toString()) }
+        this[UsersTable.profilePictureId].toOption().map { ContentMetadata.Id(it.value.toString()) },
+        this[PlansTable.plan]
     )
 }
 
@@ -103,7 +117,7 @@ fun ExposedUserPersistence(db: Database) =
 
         override suspend fun insert(user: User.New): Either<DomainError, User> = either {
             ioTransaction(db = db) {
-                val id = catchOrThrow<ExposedSQLException, EntityID<Long>> {
+                val userId = catchOrThrow<ExposedSQLException, EntityID<Long>> {
                     UsersTable.insertAndGetId {
                         it[username] = user.username.value
                         it[email] = user.email.value
@@ -114,9 +128,14 @@ fun ExposedUserPersistence(db: Database) =
                     }
                 }.mapLeft { it.convert(ExposedSQLExceptionToDbErrorConversion) }.bind()
 
-                UsersTable
+                val planId = PlansTable.insertAndGetId {
+                    it[this.userId] = userId
+                    it[plan] = user.plan
+                }
+
+                (UsersTable innerJoin PlansTable)
                     .select(userSelection.columns)
-                    .where { UsersTable.id eq id }
+                    .where { (UsersTable.id eq userId) and (PlansTable.id eq planId) }
                     .single()
                     .convert(userSelection.conversion)
             }
@@ -174,11 +193,23 @@ fun ExposedUserPersistence(db: Database) =
         }
 
         override suspend fun selectProfile(id: User.Id): Option<User.Profile> = ioTransaction(db = db) {
-            UsersTable
+            (UsersTable innerJoin PlansTable)
                 .select(profileSelection.columns)
                 .where { UsersTable.id eq id.value }
+                .orderBy(PlansTable.changedAt, DESC)
+                .limit(1)
                 .singleOrNone()
                 .map { it.convert(profileSelection.conversion) }
+        }
+
+        override suspend fun selectPlan(id: User.Id): Option<Plan> = ioTransaction(db = db) {
+            PlansTable
+                .select(PlansTable.plan)
+                .where { PlansTable.userId eq id.value }
+                .orderBy(PlansTable.changedAt, DESC)
+                .limit(1)
+                .singleOrNone()
+                .map { it[PlansTable.plan] }
         }
 
         override suspend fun update(data: User.Edit): Either<DomainError, User.Profile> = either {
@@ -193,9 +224,11 @@ fun ExposedUserPersistence(db: Database) =
 
                 ensure(updatedCount > 0) { UserNotFound }
 
-                UsersTable
+                (UsersTable innerJoin PlansTable)
                     .select(profileSelection.columns)
                     .where { UsersTable.id eq data.id.value }
+                    .orderBy(PlansTable.changedAt, DESC)
+                    .limit(1)
                     .single()
                     .convert(profileSelection.conversion)
             }
@@ -227,6 +260,21 @@ fun ExposedUserPersistence(db: Database) =
                 }
 
                 ensure(updatedCount > 0) { UserNotFound }
+            }
+        }
+
+        override suspend fun update(data: User.ChangePlan): Either<DomainError, Unit> = either {
+            ioTransaction(db = db) {
+                val planId = PlansTable.insertAndGetId {
+                    it[userId] = data.id.value
+                    it[plan] = data.plan
+                }
+
+                (UsersTable innerJoin PlansTable)
+                    .select(userSelection.columns)
+                    .where { (UsersTable.id eq data.id.value) and (PlansTable.id eq planId) }
+                    .single()
+                    .convert(userSelection.conversion)
             }
         }
     }

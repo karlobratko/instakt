@@ -53,6 +53,7 @@ fun Route.profile() {
     social()
     password()
     images()
+    plan()
 
     permissiveRateLimit {
         jwt {

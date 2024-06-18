@@ -21,6 +21,8 @@ interface ContentMetadataPersistence {
 
     suspend fun selectNonProfile(userId: User.Id): Set<ContentMetadata>
 
+    suspend fun sumTotalUploadedBytes(userId: User.Id): Long
+
     suspend fun update(data: ContentMetadata.Edit): Either<DomainError, ContentMetadata>
 
     suspend fun delete(data: ContentMetadata.Delete): Either<DomainError, Content.Id>

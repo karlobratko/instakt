@@ -24,7 +24,8 @@ data class User(
         val firstName: FirstName,
         val lastName: LastName,
         val bio: Bio,
-        val photoId: Option<ContentMetadata.Id>
+        val photoId: Option<ContentMetadata.Id>,
+        val plan: Plan
     )
 
     class New(
@@ -33,7 +34,8 @@ data class User(
         val firstName: FirstName,
         val lastName: LastName,
         val password: Password,
-        val role: Role
+        val plan: Plan,
+        val role: Role = Role.Regular
     )
 
     class Edit(
@@ -52,6 +54,11 @@ data class User(
     class ResetPassword(
         val id: Id,
         val newPassword: Password
+    )
+
+    class ChangePlan(
+        val id: Id,
+        val plan: Plan
     )
 
     @Serializable @JvmInline value class Id(val value: Long)

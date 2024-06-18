@@ -11,6 +11,7 @@ import hr.kbratko.instakt.domain.eitherNel
 import hr.kbratko.instakt.domain.mailing.Email
 import hr.kbratko.instakt.domain.mailing.MailingService
 import hr.kbratko.instakt.domain.mailing.send
+import hr.kbratko.instakt.domain.model.Plan
 import hr.kbratko.instakt.domain.model.User
 import hr.kbratko.instakt.domain.persistence.RegistrationTokenPersistence
 import hr.kbratko.instakt.domain.persistence.UserPersistence
@@ -49,7 +50,8 @@ data class Register(val parent: Auth = Auth()) {
         val firstName: String,
         val lastName: String,
         val password: String,
-        val redirectUrl: String
+        val redirectUrl: String,
+        val plan: Plan
     )
 
     @Resource("/confirm")
@@ -127,7 +129,7 @@ fun Route.register() {
                         User.FirstName(body.firstName),
                         User.LastName(body.lastName),
                         User.Password(body.password),
-                        User.Role.Regular
+                        body.plan
                     )
                 ).toEitherNel().bind()
 

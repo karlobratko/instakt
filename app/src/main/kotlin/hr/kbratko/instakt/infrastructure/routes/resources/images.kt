@@ -2,7 +2,7 @@
     OptionSerializer::class,
 )
 
-package hr.kbratko.instakt.infrastructure.routes.resources.images
+package hr.kbratko.instakt.infrastructure.routes.resources
 
 import arrow.core.Option
 import arrow.core.right
@@ -24,7 +24,6 @@ import hr.kbratko.instakt.domain.validation.validate
 import hr.kbratko.instakt.infrastructure.plugins.permissiveRateLimit
 import hr.kbratko.instakt.infrastructure.routes.Response
 import hr.kbratko.instakt.infrastructure.routes.foldValidation
-import hr.kbratko.instakt.infrastructure.routes.resources.Resources
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.Resource
