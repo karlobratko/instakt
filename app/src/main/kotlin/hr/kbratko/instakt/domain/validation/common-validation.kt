@@ -10,6 +10,6 @@ typealias ContentUploadRangeValidationScope = ValidationScope<InstantRangeError,
 
 val InstantRangeIsValid = ContentUploadRangeValidationScope validation@{
     applyWrapEitherNel {
-        ensure(this@validation.start > this@validation.endInclusive) { StartDateIsAfterEndDate }
+        ensure(this@validation.start <= this@validation.endInclusive) { StartDateIsAfterEndDate }
     }
 }

@@ -140,8 +140,10 @@ fun ExposedContentMetadataPersistence(db: Database) =
                     .innerJoin(UsersTable, { userId }, { id })
                     .select(metadataSelection.columns)
                     .apply {
+                        andWhere { UsersTable.profilePictureId neq ContentMetadataTable.id }
+
                         filter.username.onSome {
-                            andWhere { UsersTable.username like "%${it.value}%" }
+                            andWhere { UsersTable.username like "${it.value}%" }
                         }
                         filter.description.onSome {
                             andWhere { ContentMetadataTable.description like "%${it.value}%" }
@@ -184,7 +186,7 @@ fun ExposedContentMetadataPersistence(db: Database) =
                         { it.convert(tagSelection.conversion) }
                     )
 
-                metadata.map { it.copy(tags = tags[it.id]!!) }.toSet()
+                metadata.map { it.copy(tags = tags[it.id] ?: emptyList()) }.toSet()
             }
 
         override suspend fun selectProfile(userId: User.Id): Option<ContentMetadata> = ioTransaction(db = db) {
